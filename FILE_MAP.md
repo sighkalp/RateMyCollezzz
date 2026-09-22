@@ -253,12 +253,59 @@ research questions, evaluation plan, and scientific claims policy.
 
 **Must NOT:** Be treated as the final training corpus design or as evidence of final model performance.
 
+### `rrm/rmc_pilot_v0.1.jsonl`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Canonical JSONL artifact for the RMC v0.1 pilot dataset.
+
+**Used by:** Dataset validation, annotation testing, pilot statistics, and later controlled experiments.
+
+**Must NOT:** Contain unlabeled third-party data without source approval or be presented as genuine platform reviews when records were created for research.
+
+---
+
+### `rrm/validate_pilot.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Validates RMC pilot schema rules, allowed values, label encodings, unique record IDs, and basic dataset statistics.
+
+**Used by:** Pilot dataset construction and quality control.
+
+**Must NOT:** Modify labels, generate reviews, train models, or implement moderation decisions.
+
+### `rrm/annotate_pilot.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Provides a blind human-annotation workflow for the RMC pilot while hiding synthetic construction labels, provenance, and notes from annotators.
+
+**Used by:** Pilot annotation, agreement analysis, adjudication, and creation of human-reviewed RMC labels.
+
+**Must NOT:** Expose seed labels to annotators, infer deception from text alone, modify the source seed corpus, or perform model training.
+
+### `rrm/pilot_annotations.jsonl`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Stores independent human annotations for RMC pilot records.
+
+**Used by:** Agreement measurement, adjudication, annotation-quality analysis, and later gold-label construction.
+
+**Must NOT:** Contain synthetic construction labels presented as human judgments or overwrite the original seed corpus.
+
 ### Current foundation files
 
 - `rrm/RESEARCH_CONTRACT.md`
 - `rrm/DATASET_SPEC.md`
 - `rrm/ANNOTATION_GUIDE.md`
 - `rrm/DATA_SOURCE_STRATEGY.md`
+- `rrm/PILOT_DATASET_DESIGN.md`
+- `rrm/rmc_pilot_v0.1.jsonl`
+- `rrm/validate_pilot.py`
+- `rrm/annotate_pilot.py`
+- `rrm/pilot_annotations.jsonl`
 - `rrm/requirements.txt`
 - `rrm/runtime_check.py`
 
