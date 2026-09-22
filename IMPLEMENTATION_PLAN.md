@@ -10,7 +10,7 @@
 
 **Current active layer:** Layer 3 — Review Intelligence / RRM
 
-**Current active component:** RRM 3.1 — Research Contract
+**Current active component:** RRM 3.2 — Dataset Foundation
 
 **Current priority:** Build, understand, train, evaluate, and package the Review Risk Model.
 
@@ -65,7 +65,7 @@ Define and lock:
 
 Required six-paper foundation:
 
-1. Vaswani et al. — *Attention Is All You Need*
+1. Vaswani et al. — _Attention Is All You Need_
 2. Devlin et al. — BERT
 3. Liu et al. — RoBERTa
 4. Kudo & Richardson — SentencePiece
