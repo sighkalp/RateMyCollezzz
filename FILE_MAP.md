@@ -202,6 +202,36 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current active component:** RRM 3.3 - Deterministic Prechecks & Similarity
 
+### `rrm/text_normalization.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Conservative text normalization for deterministic similarity and duplicate analysis.
+
+**Used by:** rrm/similarity.py; future RRM pre-check pipeline.
+
+**Must NOT:** Transliterate Hindi, stem, remove stopwords, or perform semantic rewriting.
+
+### `rrm/similarity.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Character n-gram Jaccard similarity for near-duplicate detection. Produces evidence signals only.
+
+**Used by:** RRM deterministic pre-checks; future candidate-matching pipelines.
+
+**Must NOT:** Make moderation decisions, delete reviews, ban users, or impose similarity thresholds.
+
+### `rrm/tests/test_similarity.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for text normalization and similarity evidence generation.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
 ### `rrm/RESEARCH_CONTRACT.md`
 
 **Layer:** Layer 3 — Review Intelligence / RRM
