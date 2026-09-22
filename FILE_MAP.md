@@ -295,6 +295,16 @@ research questions, evaluation plan, and scientific claims policy.
 
 **Must NOT:** Contain synthetic construction labels presented as human judgments or overwrite the original seed corpus.
 
+### `rrm/analyze_agreement.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Measures pilot inter-annotator agreement on overlapping A1/A2 annotations using raw agreement, Cohen's kappa, class distributions, and disagreement review IDs.
+
+**Used by:** Annotation-quality analysis, guide refinement, and adjudication planning.
+
+**Must NOT:** Treat deception as text-derived ground truth, modify annotations, or make final model-performance claims.
+
 ### Current foundation files
 
 - `rrm/RESEARCH_CONTRACT.md`
@@ -306,6 +316,7 @@ research questions, evaluation plan, and scientific claims policy.
 - `rrm/validate_pilot.py`
 - `rrm/annotate_pilot.py`
 - `rrm/pilot_annotations.jsonl`
+- `rrm/analyze_agreement.py`
 - `rrm/requirements.txt`
 - `rrm/runtime_check.py`
 
