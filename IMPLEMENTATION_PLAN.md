@@ -10,7 +10,7 @@
 
 **Current active layer:** Layer 3 — Review Intelligence / RRM
 
-**Current active component:** RRM 3.3 - Deterministic Prechecks & Similarity
+**Current active component:** RRM 3.4 - Baselines
 
 **Current priority:** Build, understand, train, evaluate, and package the Review Risk Model.
 

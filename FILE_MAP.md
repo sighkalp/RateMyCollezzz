@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.3 - Deterministic Prechecks & Similarity
+**Current active component:** RRM 3.4 - Baselines
 
 ### `rrm/pii_detection.py`
 
