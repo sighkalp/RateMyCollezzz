@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.1 — Research Contract
+**Current active component:** RRM 3.2 — Dataset Foundation
 
 ### `rrm/RESEARCH_CONTRACT.md`
 
@@ -213,9 +213,52 @@ research questions, evaluation plan, and scientific claims policy.
 
 **Must NOT:** Contain final experimental results or Layer-4 moderation logic.
 
+### `rrm/DATASET_SPEC.md`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Defines the canonical RMC dataset schema, field semantics, target encoding, metadata boundaries, provenance, privacy, and leakage requirements.
+
+**Used by:** Annotation, dataset creation, preprocessing, training, evaluation, and reproducibility workflows.
+
+**Must NOT:** Contain final dataset results, final source claims, or model architecture implementation.
+
+### `rrm/ANNOTATION_GUIDE.md`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Defines operational annotation rules for all RMC labels, including positive, negative, ambiguous, multi-label, disagreement, and exclusion cases.
+
+**Used by:** Human annotation, adjudication, pilot dataset creation, label-quality analysis, and dataset validation.
+
+**Must NOT:** Invent unavailable ground truth, force uncertain deception into binary labels, or define Layer-4 moderation decisions.
+
+### `rrm/DATA_SOURCE_STRATEGY.md`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Defines approved dataset-source classes, source-to-label mappings, provenance requirements, domain limitations, licensing checks, privacy controls, and source-leakage protections.
+
+**Used by:** Dataset acquisition, pilot design, annotation, preprocessing, experimental splits, and research reporting.
+
+**Must NOT:** Treat candidate datasets as automatically approved, invent unsupported labels, or assume redistribution rights without verification.
+
+### `rrm/PILOT_DATASET_DESIGN.md`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Defines the first 150-record RMC pilot, including language coverage, scenario composition, source rules, multi-label coverage, annotation workflow, agreement checks, and pilot success criteria.
+
+**Used by:** Pilot dataset construction, human annotation, quality analysis, and later dataset-scaling decisions.
+
+**Must NOT:** Be treated as the final training corpus design or as evidence of final model performance.
+
 ### Current foundation files
 
 - `rrm/RESEARCH_CONTRACT.md`
+- `rrm/DATASET_SPEC.md`
+- `rrm/ANNOTATION_GUIDE.md`
+- `rrm/DATA_SOURCE_STRATEGY.md`
 - `rrm/requirements.txt`
 - `rrm/runtime_check.py`
 
