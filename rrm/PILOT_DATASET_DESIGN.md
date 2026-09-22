@@ -964,3 +964,78 @@ RRM 3.2D is complete when:
 After this design is locked, proceed to:
 
 **RRM 3.2E — Pilot Dataset Build**
+
+---
+
+## Pilot Outcome — RMC v0.1
+
+The initial dataset-foundation pilot is complete.
+
+### Seed Corpus
+
+- 150 synthetic RMC seed reviews
+- English, Hinglish, and Roman Hindi coverage
+- Normal, boundary, multi-label, and noisy-language examples
+- Synthetic provenance explicitly recorded
+- Seed corpus is development material, not final training or evaluation evidence
+
+### Human Annotation Pilot
+
+- Annotator A1: 40 reviews
+- Annotator A2: 20 reviews
+- Shared double-annotated reviews: 20
+- Duplicate annotator-review pairs: 0
+- Blind deception annotations remained UNKNOWN
+
+### Round-1 Agreement
+
+| Field | Raw Agreement | Cohen's Kappa |
+| --- | ---: | ---: |
+| Spam | 55% | 0.100 |
+| Toxicity | 50% | 0.029 |
+| Advertising | 70% | 0.400 |
+| Off-topic | 45% | -0.058 |
+| PII | 45% | -0.100 |
+| Language Mix | 30% | 0.122 |
+| College Category | 25% | 0.178 |
+
+The results are treated as pilot diagnostics rather than final reliability estimates.
+
+Round-1 disagreement demonstrated that several operational definitions were too ambiguous, particularly off-topic, PII, language classification, and college-category assignment.
+
+### Guide Revision
+
+Annotation Guide v0.2 was introduced in response to the Round-1 findings.
+
+The revision clarifies:
+
+- spam versus advertising
+- criticism versus toxicity
+- student-life relevance versus off-topic content
+- personal PII versus institutional contact information
+- English versus Hinglish versus Roman Hindi
+- single-topic versus multi-topic college categorization
+- independent evaluation of each risk label
+
+### Research Interpretation
+
+The synthetic seed corpus is retained for:
+
+- schema validation
+- annotation workflow validation
+- deterministic-rule development
+- robustness examples
+- test fixtures
+- later tokenizer and character-level experiments
+
+It must not be represented as:
+
+- a naturally collected student-review corpus
+- a final human-annotated dataset
+- model-performance evidence
+- proof of real-world prevalence
+- real-world deception ground truth
+
+The Round-1 annotations and disagreements are preserved rather than overwritten.
+
+Future annotation reliability should be re-evaluated on approved real or independently collected research data using the revised annotation guide.
