@@ -561,6 +561,26 @@ Legacy functionality must not be blindly discarded.
 
 **Must NOT:** Contain synthetic-pilot performance claims, moderation threshold logic, or Trust-layer tests.
 
+### `rrm/baseline_char_ngram_lr.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Character n-gram TF-IDF + Logistic Regression baseline (RRM 3.4B). Thin wrapper reusing the shared training and evaluation pipeline from `baseline_tfidf_lr.py`.
+
+**Used by:** `rrm/tests/test_baseline_char_ngram_lr.py`; evaluation pipeline.
+
+**Must NOT:** Consume Trust decisions, similarity scores, PII counts, or moderation features. Not a production classifier.
+
+### `rrm/tests/test_baseline_char_ngram_lr.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the character n-gram baseline, covering configuration, training, shared validation, leakage guards, delegated evaluation, and character-specific behavior.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
 ## File Registration Format
 
 Whenever a meaningful new file is approved, document it using:

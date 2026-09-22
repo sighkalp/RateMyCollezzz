@@ -417,13 +417,14 @@ def validate_no_exact_leakage(
 # ---------------------------------------------------------------------------
 
 
-def fit_tfidf_logreg(
+def _fit_tfidf_logreg_with_analyzer(
     train_records: Iterable[Mapping[str, Any]],
     *,
-    labels: Tuple[str, ...] = PRIMARY_LABELS,
-    config: Optional[TfidfLogRegConfig] = None,
+    labels: Tuple[str, ...],
+    config: TfidfLogRegConfig,
+    analyzer: str,
 ) -> FittedTfidfLogRegBaseline:
-    """Fit a TF-IDF + Logistic Regression baseline on training data.
+    """Private shared trainer for TF-IDF + Logistic Regression baselines.
 
     Parameters
     ----------
@@ -431,9 +432,12 @@ def fit_tfidf_logreg(
         Training records.  Each must contain 'review_id', 'review_text',
         and label fields.
     labels : tuple[str, ...]
-        Label names to train models for.  Default is PRIMARY_LABELS.
-    config : TfidfLogRegConfig or None
-        Configuration.  Uses defaults if None.
+        Label names to train models for.
+    config : TfidfLogRegConfig
+        Configuration.
+    analyzer : str
+        Analyzer for TfidfVectorizer.  ``"word"`` for the word baseline,
+        ``"char"`` for the character n-gram baseline.
 
     Returns
     -------
@@ -448,9 +452,6 @@ def fit_tfidf_logreg(
         On value violations (empty review_id, invalid labels,
         duplicate review_id).
     """
-    if config is None:
-        config = TfidfLogRegConfig()
-
     # Validate records
     validated, _ = _validate_records(train_records, "train", labels=labels)
 
@@ -459,7 +460,7 @@ def fit_tfidf_logreg(
 
     # Fit ONE shared TF-IDF vectorizer on train text only
     vectorizer = TfidfVectorizer(
-        analyzer="word",
+        analyzer=analyzer,
         ngram_range=config.ngram_range,
         min_df=config.min_df,
         max_df=config.max_df,
@@ -510,6 +511,54 @@ def fit_tfidf_logreg(
         models=models,
         trained_labels=trained_labels,
         skipped_labels=skipped_labels,
+    )
+
+
+def fit_tfidf_logreg(
+    train_records: Iterable[Mapping[str, Any]],
+    *,
+    labels: Tuple[str, ...] = PRIMARY_LABELS,
+    config: Optional[TfidfLogRegConfig] = None,
+) -> FittedTfidfLogRegBaseline:
+    """Fit a word-level TF-IDF + Logistic Regression baseline on training data.
+
+    Parameters
+    ----------
+    train_records : iterable of mapping-like
+        Training records.  Each must contain 'review_id', 'review_text',
+        and label fields.
+    labels : tuple[str, ...]
+        Label names to train models for.  Default is PRIMARY_LABELS.
+    config : TfidfLogRegConfig or None
+        Configuration.  Uses defaults if None.
+
+    Returns
+    -------
+    FittedTfidfLogRegBaseline
+        Fitted baseline with vectorizer and per-label models.
+
+    Raises
+    ------
+    TypeError
+        On type violations in records or config.
+    ValueError
+        On value violations (empty review_id, invalid labels,
+        duplicate review_id).
+
+    Notes
+    -----
+    This function implements the word-analyzer TF-IDF baseline
+    (analyzer="word").  For the character n-gram baseline, use
+    :func:`rrm.baseline_char_ngram_lr.fit_char_ngram_logreg`.
+    """
+    if config is None:
+        config = TfidfLogRegConfig()
+
+    return _fit_tfidf_logreg_with_analyzer(
+        train_records,
+        labels=labels,
+        config=config,
+        analyzer="word",
     )
 
 
