@@ -1,0 +1,94 @@
+﻿# ==========================================================
+# RateMyCollezzz
+# Repository ignore policy
+# ==========================================================
+
+# -------------------------
+# Secrets / environment
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# Python
+# -------------------------
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# -------------------------
+# Node / frontend
+# -------------------------
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -------------------------
+# Local databases
+# -------------------------
+*.sqlite3
+*.sqlite
+*.db
+
+# -------------------------
+# ML / RRM generated files
+# -------------------------
+checkpoints/
+runs/
+artifacts/
+model_cache/
+dataset_cache/
+*.ckpt
+*.pth
+*.pt
+
+# -------------------------
+# Logs / temporary files
+# -------------------------
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+
+# -------------------------
+# Uploaded / generated media
+# -------------------------
+uploads/
+media/
+
+# -------------------------
+# IDE
+# -------------------------
+.vscode/
+.idea/
+*.code-workspace
+
+# -------------------------
+# OS
+# -------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -------------------------
+# Python packaging
+# -------------------------
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
