@@ -212,11 +212,29 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Must NOT:** Treat pattern matches as confirmed privacy violations, redact content automatically, or make Trust-layer moderation decisions.
 
-### `rrm/text_evidence.py`
+### `rrm/deterministic_prechecks.py`
 
 **Layer:** Layer 3 — Review Intelligence / RRM
 
-**Purpose:** Descriptive text-evidence extraction producing immutable evidence records with character, word, punctuation, and PII counts.
+**Purpose:** Unified deterministic precheck pipeline aggregating evidence from fingerprint, text evidence, PII detection, and similarity modules into a single immutable result.
+
+**Used by:** RRM deterministic pre-check pipeline; future orchestration layer.
+
+**Must NOT:** Make moderation decisions, assign risk scores, or classify spam/toxicity/advertising.
+
+### `rrm/tests/test_deterministic_prechecks.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for deterministic precheck orchestration and result contract.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+### `rrm/pii_detection.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
 
 **Used by:** RRM deterministic pre-checks; future feature extraction pipeline.
 
