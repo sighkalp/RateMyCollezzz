@@ -1,16 +1,10 @@
-﻿
----
-
-## 3. `CLAUDE.md`
-
-```md
 # RateMyCollezzz — Claude Implementation Contract
 
 ## 1. Role
 
 You are an implementation engineer.
 
-You are NOT the system architect.
+You are **not** the system architect.
 
 You must implement the approved plan exactly.
 
@@ -26,9 +20,9 @@ Do not independently:
 
 ---
 
-# 2. Required Reading
+## 2. Required Reading
 
-Before every implementation task read:
+Before every implementation task, read:
 
 1. `ARCHITECTURE.md`
 2. `IMPLEMENTATION_PLAN.md`
@@ -37,28 +31,17 @@ Before every implementation task read:
 
 If these instructions conflict:
 
-STOP.
+**STOP.**
 
 Report the conflict.
 
 Do not resolve architectural conflicts independently.
 
----
-
-# 3. Current Active Layer
-
-Current active layer:
-
-**Layer 3 — Review Intelligence / RRM**
-
-Unless explicitly instructed otherwise, only `rrm/` may receive implementation
-changes.
-
-Other architectural layers are read-only.
+The current active layer/component must be taken from `IMPLEMENTATION_PLAN.md`; do not hardcode an old status.
 
 ---
 
-# 4. Root Architecture
+## 3. Root Architecture
 
 Permitted architectural root folders:
 
@@ -70,7 +53,7 @@ Permitted architectural root folders:
 
 Never create a new top-level architectural folder.
 
-Do not create:
+Do not create alternate roots such as:
 
 - `backend/`
 - `frontend/`
@@ -83,11 +66,11 @@ at repository root.
 
 ---
 
-# 5. Scope Rule
+## 4. Scope Rule
 
 Implement only the explicitly approved component.
 
-Do NOT:
+Do **not**:
 
 - implement the next component early
 - implement adjacent features
@@ -95,22 +78,27 @@ Do NOT:
 - create speculative abstractions
 - refactor unrelated code
 - change architecture because another design seems cleaner
+- perform "helpful" extra work outside the contract
 
 If additional scope appears useful:
 
-REPORT IT.
+**REPORT IT.**
 
 Do not implement it automatically.
 
 ---
 
-# 6. File Rule
+## 5. Allowed-Files Rule
 
-Only create files explicitly permitted by the current task.
+If the current task contains an allowed-files list, it is a hard boundary.
+
+Only those files may be created or modified.
+
+All other files are read-only.
 
 If another file appears necessary:
 
-STOP.
+**STOP.**
 
 Report:
 
@@ -123,7 +111,7 @@ Do not create it until approved.
 
 ---
 
-# 7. Folder Rule
+## 6. Folder Rule
 
 Keep the project structure compact.
 
@@ -139,18 +127,15 @@ Do not create unnecessary nested folders such as:
 - `processors/`
 - `services/`
 
-unless a demonstrated repeated responsibility requires one and approval is
-given.
+unless a demonstrated repeated responsibility requires one and approval is given.
 
 Prefer fewer understandable files over unnecessary architectural depth.
 
 ---
 
-# 8. Modification Rule
+## 7. Modification Rule
 
 Only modify files explicitly permitted by the current implementation task.
-
-All other files are read-only.
 
 Do not modify:
 
@@ -158,23 +143,24 @@ Do not modify:
 - unrelated tests
 - other layers
 - unrelated configuration
+- GitHub workflow files
+- project-wide dependencies
 
 unless explicitly authorized.
 
 ---
 
-# 9. Deletion Rule
+## 8. Deletion / Rename Rule
 
-Never delete, rename, or relocate an existing file unless explicitly
-instructed.
+Never delete, rename, or relocate an existing file unless explicitly instructed.
 
-If deletion appears necessary:
+If deletion or relocation appears necessary:
 
-STOP and report it.
+**STOP and report it.**
 
 ---
 
-# 10. Dependency Rule
+## 9. Dependency Rule
 
 Do not add any dependency without explicit approval.
 
@@ -187,20 +173,19 @@ This includes:
 - visualization libraries
 - external services
 
-If a dependency appears necessary:
-
-report:
+If a dependency appears necessary, report:
 
 - package name
 - purpose
-- why existing dependencies are insufficient
-- likely impact
+- why current dependencies are insufficient
+- likely impact on environment/build size
+- whether it is training-only or runtime-required
 
 Do not install it automatically.
 
 ---
 
-# 11. RRM Architecture Boundary
+## 10. RRM Architecture Boundary
 
 Layer 3 analyzes review content.
 
@@ -212,9 +197,10 @@ The RRM may output:
 - risk scores
 - similarity indicators
 - embeddings where approved
+- deterministic evidence flags
 - reason codes where supported
 
-The RRM must NOT directly:
+The RRM must **not** directly:
 
 - delete reviews
 - ban users
@@ -223,29 +209,32 @@ The RRM must NOT directly:
 - implement account coordination
 - implement campaign detection
 
+Rule-derived evidence and learned predictions must remain distinguishable.
+
 ---
 
-# 12. Model Architecture Rule
+## 11. Model Architecture Rule
 
 Do not silently change:
 
 - tokenizer family
 - Transformer presence
 - Character CNN presence
-- feature fusion strategy
+- feature-fusion strategy
 - output-label taxonomy
 - multi-task strategy
 - model-size direction
+- final encoder training/pretraining strategy
 
 If experimentation suggests a change:
 
-REPORT IT.
+**REPORT IT.**
 
 Do not change the architecture until approved.
 
 ---
 
-# 13. Research Integrity Rule
+## 12. Research Integrity Rule
 
 Never fabricate:
 
@@ -269,21 +258,23 @@ Design targets must be described as design targets.
 
 Hypotheses must be described as hypotheses.
 
+Do not claim a model is "fine-tuned" unless the actual training strategy warrants that term.
+
 ---
 
-# 14. Paper Provenance Rule
+## 13. Paper Provenance Rule
 
 For important model decisions identify whether they are:
 
-1. PAPER-DERIVED
-2. RRM EXPERIMENTAL DESIGN CHOICE
-3. STANDARD ENGINEERING PRACTICE
+1. **PAPER-DERIVED**
+2. **RRM EXPERIMENTAL DESIGN CHOICE**
+3. **STANDARD ENGINEERING PRACTICE**
 
 Do not present project choices as if research papers proved them.
 
 ---
 
-# 15. Baseline Rule
+## 14. Baseline Rule
 
 Do not skip required baselines.
 
@@ -291,9 +282,29 @@ The custom RRM must not be assumed better because it is more complex.
 
 Required comparisons are defined in `IMPLEMENTATION_PLAN.md`.
 
+Do not tune the custom model on information from the final test split.
+
 ---
 
-# 16. Testing Rule
+## 15. Data Leakage Rule
+
+Protect experiment validity.
+
+Do not allow:
+
+- exact duplicates across train/validation/test
+- obvious near-duplicate leakage where detectable
+- test labels to influence training
+- test-set-driven hyperparameter tuning
+- data preprocessing fitted on the full dataset when it should be fit only on training data
+
+If leakage is discovered:
+
+**STOP and report it.**
+
+---
+
+## 16. Testing Rule
 
 Run the smallest relevant tests first.
 
@@ -311,7 +322,7 @@ Report failures clearly.
 
 ---
 
-# 17. Git / Change Discipline
+## 17. Git / Change Discipline
 
 Before implementation:
 
@@ -319,8 +330,11 @@ Before implementation:
 - inspect relevant files
 - understand existing ownership
 
-After implementation report:
+Do not commit, push, reset, delete branches, or rewrite Git history unless the user explicitly instructs you to do so.
 
+After implementation, report:
+
+- files read
 - files created
 - files modified
 - files deleted
@@ -328,19 +342,17 @@ After implementation report:
 - tests run
 - deviations
 
-Do not modify unrelated files.
-
 Unexpected file changes are considered implementation failure until explained.
 
 ---
 
-# 18. Legacy UI Preservation Rule
+## 18. Legacy UI Preservation Rule
 
 The legacy frontend contains valuable working functionality.
 
 During future Layer-1 migration:
 
-PRESERVE WORKING BEHAVIOUR BY DEFAULT.
+**PRESERVE WORKING BEHAVIOUR BY DEFAULT.**
 
 Do not remove working:
 
@@ -364,7 +376,7 @@ It does not automatically mean removal.
 
 ---
 
-# 19. Stop Conditions
+## 19. Stop Conditions
 
 STOP implementation if:
 
@@ -378,15 +390,17 @@ STOP implementation if:
 - scientific claims lack evidence
 - model behaviour cannot be justified
 - implementation would require speculative future work
+- current instructions do not define enough information for a safe implementation
 
 Report the issue instead of improvising.
 
 ---
 
-# 20. Completion Report
+## 20. Completion Report
 
 Every implementation response must end with:
 
+```text
 FILES READ:
 - ...
 
@@ -410,6 +424,7 @@ RESULT:
 
 DEVIATIONS FROM PLAN:
 - NONE
+```
 
 If deviations exist, describe them explicitly.
 

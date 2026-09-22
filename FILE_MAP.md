@@ -1,4 +1,4 @@
-﻿# RateMyCollezzz — File Map
+# RateMyCollezzz — File Map
 
 This document is the navigation index for the repository.
 
@@ -19,13 +19,13 @@ Only document files that actually exist or have been explicitly approved.
 
 ---
 
-# Root Control Files
+## Root Control Files
 
-## `ARCHITECTURE.md`
+### `ARCHITECTURE.md`
 
-Purpose:
+**Layer:** Project-wide control
 
-Defines the permanent five-layer architecture.
+**Purpose:** Defines the stable five-layer architecture.
 
 Defines:
 
@@ -38,35 +38,36 @@ Defines:
 - legacy migration policy
 - architecture change policy
 
-Normal implementation tasks must not modify it.
+**Must NOT:** Be modified by normal implementation tasks.
 
 ---
 
-## `IMPLEMENTATION_PLAN.md`
+### `IMPLEMENTATION_PLAN.md`
 
-Purpose:
+**Layer:** Project-wide control
 
-Defines what is currently being built.
+**Purpose:** Defines what is currently being built.
 
 Contains:
 
 - active layer
-- active objectives
+- active component
 - RRM build sequence
 - allowed work
 - forbidden work
 - experiment requirements
 - completion rules
+- learning/teaching gate
 
 This is where implementation priority changes.
 
 ---
 
-## `CLAUDE.md`
+### `CLAUDE.md`
 
-Purpose:
+**Layer:** Project-wide control
 
-Defines mandatory implementation-agent behaviour.
+**Purpose:** Defines mandatory implementation-agent behaviour.
 
 Prevents:
 
@@ -78,39 +79,41 @@ Prevents:
 - unrelated refactoring
 - fabricated research results
 - uncontrolled feature removal
+- uncontrolled Git operations
 
 ---
 
-## `FILE_MAP.md`
+### `FILE_MAP.md`
 
-Purpose:
+**Layer:** Project-wide control
 
-Repository navigation.
+**Purpose:** Repository navigation and file ownership map.
 
 This file should remain concise and accurate.
 
 ---
 
-## `README.md`
+### `README.md`
 
-Purpose:
+**Layer:** Project-wide overview
 
-Human-facing overview of RateMyCollezzz.
+**Purpose:** Human-facing overview of RateMyCollezzz.
 
 Explains:
 
 - what the project is
 - five architectural layers
-- current model direction
+- current development focus
+- current RRM direction
 - where to start reading
 
 ---
 
-## `.gitignore`
+### `.gitignore`
 
-Purpose:
+**Layer:** Project-wide repository hygiene
 
-Prevent local/generated content from entering Git.
+**Purpose:** Prevent local/generated content from entering Git.
 
 Examples:
 
@@ -126,15 +129,13 @@ Examples:
 
 ---
 
-# Layer 1 — `experience/`
+## Layer 1 — `experience/`
 
-Ownership:
+**Ownership:** User-facing experience.
 
-User-facing experience.
+**Current state:** Placeholder only unless `IMPLEMENTATION_PLAN.md` activates Layer 1.
 
-Current implementation priority:
-
-Defined by `IMPLEMENTATION_PLAN.md`.
+**Currently existing tracked placeholder:** `experience/.gitkeep`
 
 Known responsibilities:
 
@@ -160,11 +161,13 @@ Do not pre-create speculative Layer-1 files while RRM work is active.
 
 ---
 
-# Layer 2 — `platform/`
+## Layer 2 — `platform/`
 
-Ownership:
+**Ownership:** Django Platform Core.
 
-Django platform core.
+**Current state:** Placeholder only unless activated.
+
+**Currently existing tracked placeholder:** `platform/.gitkeep`
 
 Known responsibilities:
 
@@ -191,21 +194,23 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 ---
 
-# Layer 3 — `rrm/`
+## Layer 3 — `rrm/`
 
-Ownership:
+**Ownership:** Review Intelligence / Review Risk Model.
 
-Review Intelligence / Review Risk Model.
+**Current state:** ACTIVE
 
-Current development priority:
+**Current active component:** RRM 3.1 — Research Contract
 
-See `IMPLEMENTATION_PLAN.md`.
+**Currently existing tracked placeholder:** `rrm/.gitkeep`
 
 Expected responsibilities will eventually include:
 
 - research configuration
 - dataset handling
 - annotation support
+- deterministic pre-checks
+- duplicate/similarity evidence
 - baseline models
 - tokenizer
 - Transformer encoder
@@ -219,7 +224,7 @@ Expected responsibilities will eventually include:
 
 Exact files must be added incrementally.
 
-Do NOT generate the entire RRM folder tree in advance.
+Do **not** generate the entire RRM folder tree in advance.
 
 Every new file must have:
 
@@ -227,13 +232,17 @@ Every new file must have:
 - an approved reason to exist
 - an entry in this file
 
+Remove `rrm/.gitkeep` only when the first approved real RRM file is added.
+
 ---
 
-# Layer 4 — `trust/`
+## Layer 4 — `trust/`
 
-Ownership:
+**Ownership:** Trust & Safety.
 
-Trust & Safety.
+**Current state:** Placeholder only unless activated.
+
+**Currently existing tracked placeholder:** `trust/.gitkeep`
 
 Future responsibilities may include:
 
@@ -250,16 +259,17 @@ Layer 4 consumes RRM signals.
 
 It does not belong inside `rrm/`.
 
-Do not implement Trust algorithms while Layer 3 is the active scope unless
-explicitly authorized.
+Do not implement Trust algorithms while Layer 3 is the active scope unless explicitly authorized.
 
 ---
 
-# Layer 5 — `ops/`
+## Layer 5 — `ops/`
 
-Ownership:
+**Ownership:** Data, Security, and Operations.
 
-Data, Security, and Operations.
+**Current state:** Placeholder only unless activated.
+
+**Currently existing tracked placeholder:** `ops/.gitkeep`
 
 Future responsibilities include:
 
@@ -275,29 +285,39 @@ Future responsibilities include:
 - deployment
 - operational performance
 
-Do not pre-create operational infrastructure during RRM research unless
-explicitly required.
+Do not pre-create operational infrastructure during RRM research unless explicitly required.
 
 ---
 
-# Legacy Implementation
+## Legacy Implementation
 
-Preserved external project:
+The legacy implementation is intentionally outside the active repository.
+
+Known local backup created during migration:
 
 `C:\Projects\RateMyCollezzz_LEGACY_20260922_115705`
 
-A ZIP backup also exists.
+A ZIP backup also exists locally.
+
+This path is local recovery information, not a portable repository dependency.
 
 Legacy code is reference and migration material.
 
 Migration rule:
 
+```text
 Inspect
-→ Understand
-→ Classify
-→ Preserve useful behaviour
-→ Simplify where justified
-→ Migrate deliberately
+  ↓
+Understand
+  ↓
+Classify
+  ↓
+Preserve useful behaviour
+  ↓
+Simplify where justified
+  ↓
+Migrate deliberately
+```
 
 Legacy code must not be blindly copied.
 
@@ -305,26 +325,20 @@ Legacy functionality must not be blindly discarded.
 
 ---
 
-# File Registration Format
+## File Registration Format
 
 Whenever a meaningful new file is approved, document it using:
 
-## `path/to/file.py`
+```md
+### `path/to/file.py`
 
-Layer:
+**Layer:** Layer X
 
-Layer X
+**Purpose:** One concise description.
 
-Purpose:
+**Used by:** Relevant components.
 
-One concise description.
-
-Used by:
-
-Relevant components.
-
-Must NOT:
-
-Responsibility that belongs elsewhere.
+**Must NOT:** Responsibility that belongs elsewhere.
+```
 
 This format keeps ownership obvious.

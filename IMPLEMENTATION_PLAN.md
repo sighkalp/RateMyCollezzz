@@ -1,26 +1,18 @@
-﻿# RateMyCollezzz — Implementation Plan
+# RateMyCollezzz — Implementation Plan
 
 ## 1. Project State
 
-Project foundation:
+**Project foundation:** LOCKED
 
-**LOCKED**
+**Git baseline:** ESTABLISHED
 
-Git baseline:
+**Legacy implementation:** BACKED UP AND PRESERVED
 
-**ESTABLISHED**
+**Current active layer:** Layer 3 — Review Intelligence / RRM
 
-Legacy implementation:
+**Current active component:** RRM 3.1 — Research Contract
 
-**BACKED UP AND PRESERVED**
-
-Current active layer:
-
-**Layer 3 — Review Intelligence / RRM**
-
-Current priority:
-
-Build, understand, train, evaluate, and package the Review Risk Model.
+**Current priority:** Build, understand, train, evaluate, and package the Review Risk Model.
 
 Layer 1 UI work is currently paused.
 
@@ -32,7 +24,7 @@ Layer 5 production integration is future work.
 
 ---
 
-# 2. Why Layer 3 Is Active First
+## 2. Why Layer 3 Is Active First
 
 Layer numbering represents system responsibility.
 
@@ -42,6 +34,7 @@ The RRM can be researched and developed independently using:
 
 - datasets
 - annotation rules
+- deterministic review checks
 - local training
 - evaluation datasets
 - model checkpoints
@@ -52,11 +45,11 @@ Platform integration happens later.
 
 ---
 
-# 3. RRM Development Sequence
+## 3. RRM Development Sequence
 
-## RRM 3.1 — Research Contract
+### RRM 3.1 — Research Contract
 
-Define:
+Define and lock:
 
 - exact research problem
 - RRM purpose
@@ -64,15 +57,26 @@ Define:
 - label taxonomy
 - evidence requirements
 - research questions
-- six core-paper contributions
+- core-paper contribution matrix
 - experiment requirements
-- claims that must NOT be made
+- claims that must not be made
+- distinction between rule-derived and learned signals
+- final-model training-strategy decision criteria
 
-No final-model implementation begins before this is clear.
+Required six-paper foundation:
+
+1. Vaswani et al. — *Attention Is All You Need*
+2. Devlin et al. — BERT
+3. Liu et al. — RoBERTa
+4. Kudo & Richardson — SentencePiece
+5. Zhang, Zhao & LeCun — Character-level CNN for Text Classification
+6. Ott et al. — Deceptive Opinion Spam
+
+No final-model implementation begins before this contract is clear.
 
 ---
 
-## RRM 3.2 — Dataset Foundation
+### RRM 3.2 — Dataset Foundation
 
 Design and build the RMC dataset.
 
@@ -93,6 +97,19 @@ Primary labels:
 - off-topic
 - PII
 
+Dataset schema should support, where applicable:
+
+- `review_id`
+- `review_text`
+- `language_mix`
+- optional `college_category`
+- binary risk labels
+- `source_type`
+- annotation metadata
+- split membership/version metadata
+
+`deception` must only be assigned when defensible ground truth exists.
+
 Dataset work includes:
 
 - annotation guide
@@ -102,6 +119,7 @@ Dataset work includes:
 - confusion rules
 - annotation disagreement rules
 - source tracking
+- source/licensing review where required
 - consent where required
 - de-identification where required
 - multiple annotators on overlapping samples
@@ -114,9 +132,33 @@ Dataset work includes:
 
 Dataset size must never be fabricated.
 
+No result may be reported from an unfrozen or ambiguously split dataset as if it were final evidence.
+
 ---
 
-## RRM 3.3 — Baselines
+### RRM 3.3 — Deterministic Pre-checks and Similarity Foundation
+
+Implement only the approved non-neural evidence needed before learned classification.
+
+Potential responsibilities:
+
+- input validation
+- malformed/empty review handling
+- obvious URL/advertising patterns
+- deterministic PII patterns where appropriate
+- exact duplicate detection
+- basic near-duplicate/similarity baseline
+- evidence reason codes
+
+Rules must remain distinguishable from neural predictions.
+
+Duplicate detection must not rely only on ML.
+
+This stage does not make moderation decisions.
+
+---
+
+### RRM 3.4 — Baselines
 
 Implement and evaluate:
 
@@ -131,9 +173,11 @@ Establish evidence that the custom RRM provides justified value.
 
 The custom RRM must not automatically be assumed superior.
 
+All baseline preprocessing and split usage must be reproducible.
+
 ---
 
-## RRM 3.4 — RMC Tokenizer
+### RRM 3.5 — RMC Tokenizer
 
 Implement and evaluate SentencePiece-based tokenization.
 
@@ -152,13 +196,48 @@ Study:
 - unknown-character handling
 - byte fallback where justified
 
+Current design direction:
+
+- vocabulary approximately 20–24K
+- sequence window around 256 tokens
+
+These are design targets, not fixed truths.
+
 Tokenizer decisions must be measured rather than assumed.
 
 ---
 
-## RRM 3.5 — Semantic Encoder
+### RRM 3.6 — Encoder Training Strategy Gate
 
-Implement the compact Transformer encoder.
+Before training the final custom semantic encoder, explicitly decide how it obtains language knowledge.
+
+Candidate strategies may include:
+
+- training the custom encoder from scratch
+- domain/language pretraining followed by task fine-tuning
+- distillation from a stronger teacher
+- adaptation of an existing compact encoder
+
+This decision affects:
+
+- data requirements
+- compute
+- scientific novelty
+- model ownership
+- training time
+- expected performance
+
+No strategy is selected merely because it is convenient.
+
+BERT and RoBERTa remain pretrained baselines regardless of the final custom-model strategy.
+
+Any final-model strategy that materially changes the agreed custom-RRM architecture requires explicit approval.
+
+---
+
+### RRM 3.7 — Semantic Encoder
+
+Implement the compact Transformer encoder after the training-strategy gate is resolved.
 
 Required concepts to understand before locking the component:
 
@@ -193,7 +272,7 @@ They are not final claims.
 
 ---
 
-## RRM 3.6 — Character Branch
+### RRM 3.8 — Character Branch and Feature Fusion
 
 Implement Character CNN.
 
@@ -211,36 +290,30 @@ Capture character-level patterns including:
 
 Examples:
 
-`goooood`
+- `goooood`
+- `b3st`
+- `achiiii`
+- `facultyyyy`
 
-`b3st`
+Then combine:
 
-`achiiii`
+```text
+Transformer representation
+        +
+Character representation
+        ↓
+Feature fusion
+```
 
-`facultyyyy`
+The initial fusion method must remain simple.
+
+Do not introduce unnecessarily complex fusion mechanisms before establishing a working baseline.
 
 The Character CNN must later be validated through ablation.
 
 ---
 
-## RRM 3.7 — Feature Fusion
-
-Combine:
-
-Transformer Representation
-+
-Character Representation
-
-The fusion method must remain simple initially.
-
-Do not introduce unnecessarily complex fusion mechanisms before establishing
-a working baseline.
-
-Fusion design must later be tested experimentally.
-
----
-
-## RRM 3.8 — Multi-task Heads
+### RRM 3.9 — Multi-task Heads and Training
 
 Create separate prediction heads for:
 
@@ -255,7 +328,7 @@ Optional experimental head:
 
 - AI-like writing signal
 
-Study:
+Study and explicitly document:
 
 - multi-task learning
 - shared representation
@@ -265,16 +338,28 @@ Study:
 - task weighting
 - regularization
 - dropout
+- optimizer
+- learning-rate schedule
+- batch size
+- early stopping
+- checkpoint selection
 - threshold selection
 - calibration where useful
+- random seeds
+
+Every important choice must be classified as:
+
+- PAPER-DERIVED
+- RRM EXPERIMENTAL DESIGN CHOICE
+- STANDARD ENGINEERING PRACTICE
 
 ---
 
-## RRM 3.9 — Scientific Evaluation
+### RRM 3.10 — Scientific Evaluation
 
 Required experiments include:
 
-### Baseline Comparison
+#### Baseline comparison
 
 Evaluate:
 
@@ -295,17 +380,12 @@ Primary metrics:
 
 Accuracy must not be used as the only evaluation metric.
 
----
-
-### Character CNN Ablation
+#### Character CNN ablation
 
 Compare:
 
-Full RRM
-
-vs
-
-RRM without Character CNN
+- Full RRM
+- RRM without Character CNN
 
 Measure:
 
@@ -313,17 +393,12 @@ Measure:
 - noisy-text performance
 - robustness to spelling variation
 
----
-
-### Tokenizer Experiment
+#### Tokenizer experiment
 
 Compare:
 
-RMC SentencePiece tokenizer
-
-vs
-
-appropriate pretrained/default tokenizer
+- RMC SentencePiece tokenizer
+- appropriate pretrained/default tokenizer
 
 Measure:
 
@@ -332,17 +407,12 @@ Measure:
 - vocabulary behaviour
 - downstream performance
 
----
-
-### Multi-task Experiment
+#### Multi-task experiment
 
 Compare where practical:
 
-Shared multi-task RRM
-
-vs
-
-separate classifiers
+- shared multi-task RRM
+- separate classifiers
 
 Measure:
 
@@ -352,9 +422,7 @@ Measure:
 - model size
 - training behaviour
 
----
-
-### Robustness Evaluation
+#### Robustness evaluation
 
 Test controlled perturbations including:
 
@@ -366,9 +434,7 @@ Test controlled perturbations including:
 
 Measure performance degradation.
 
----
-
-### Efficiency Evaluation
+#### Efficiency evaluation
 
 Measure:
 
@@ -380,9 +446,7 @@ Measure:
 - throughput
 - memory usage where practical
 
----
-
-### Reliability
+#### Reliability and error analysis
 
 Use:
 
@@ -390,13 +454,16 @@ Use:
 - reproducible configuration
 - multiple-run variability where practical
 - confidence intervals where justified
-- error analysis
+- false-positive analysis
+- false-negative analysis
+- language-mix error analysis
+- per-label confusion analysis
 
 No performance claim may be written before actual results exist.
 
 ---
 
-## RRM 3.10 — Packaging and Layer Contract
+### RRM 3.11 — Packaging and Layer Contract
 
 Produce a clean inference interface.
 
@@ -410,5 +477,190 @@ Conceptual output:
   "advertising_score": 0.0,
   "off_topic_score": 0.0,
   "pii_score": 0.0,
-  "similarity_signal": 0.0
+  "similarity_signal": 0.0,
+  "reason_codes": []
 }
+```
+
+The exact schema must be finalized from real implementation needs.
+
+Layer 3 stops at risk/evidence outputs.
+
+Layer 3 must **not** output:
+
+- DELETE
+- BAN
+- REMOVE USER
+- FINAL MODERATION DECISION
+
+Layer 4 consumes Layer-3 outputs later.
+
+---
+
+## 4. Future Research Awareness
+
+Future Trust-layer research may involve:
+
+- collective opinion spam
+- temporal behaviour
+- account coordination
+- rating patterns
+- campaign detection
+- graph relationships
+- reputation signals
+
+Future requirements may influence:
+
+- metadata retention
+- timestamps
+- stable anonymized identifiers where ethically appropriate
+- similarity outputs
+- probability outputs
+- audit-friendly reason codes
+
+Future algorithms must not be implemented during current RRM work.
+
+Rule:
+
+**ARCHITECTURAL AWARENESS NOW.**
+
+**ALGORITHMIC IMPLEMENTATION LATER.**
+
+---
+
+## 5. Layer 1 Status
+
+Layer 1 is **PAUSED**, not abandoned.
+
+Known locked requirements:
+
+- preserve working legacy frontend behaviour
+- map-centric Discover interface
+- future UI visual direction already established
+- improved map clarity
+- improved map colour hierarchy
+- college logos inside location pins
+- strong selected-pin state
+- 2D map mode
+- 3D perspective map mode
+- no fabricated campus buildings
+- search
+- filters
+- college details
+- reviews
+- gallery
+- save
+- compare
+
+Do not alter Layer 1 during current RRM development unless explicitly activated.
+
+---
+
+## 6. Current Allowed Work
+
+Allowed:
+
+- RRM research
+- research-paper analysis
+- dataset design
+- annotation design
+- deterministic RRM pre-check design
+- RRM code
+- RRM tests
+- RRM experiments
+- RRM configuration
+- RRM evaluation
+- RRM inference interface
+- RRM-related documentation updates when explicitly approved
+
+---
+
+## 7. Current Forbidden Work
+
+Do **not** implement:
+
+- Experience UI
+- Django Platform Core
+- Trust Engine
+- behavioural detection
+- coordination engine
+- campaign detection
+- community
+- chat
+- advertising
+- deployment infrastructure
+
+unless explicitly activated later.
+
+---
+
+## 8. Component Workflow
+
+Every RRM component follows:
+
+1. Define exactly what is being built.
+2. Explain every important concept.
+3. Identify research-paper provenance.
+4. Identify architecture ownership.
+5. Identify allowed files.
+6. Identify forbidden files.
+7. Identify allowed dependencies.
+8. Implement only approved scope.
+9. Run focused tests.
+10. Inspect changed files.
+11. Run broader validation when appropriate.
+12. Explain the implementation deeply.
+13. Verify experiment outputs where relevant.
+14. Update `FILE_MAP.md`.
+15. Lock the component.
+16. Move forward.
+
+---
+
+## 9. Learning / Teaching Gate
+
+A component is not considered learned merely because it runs.
+
+After each substantial RRM component, the explanation must cover:
+
+- what it is
+- why it exists
+- how it works internally
+- inputs
+- outputs
+- tensor/data shapes where relevant
+- exact code location
+- important classes/functions
+- hyperparameters
+- relevant mathematics
+- paper contribution
+- what was borrowed from the paper
+- what is our own experimental design choice
+- alternatives considered
+- tests performed
+- experiment evidence
+- failure modes
+- how the next component uses it
+
+Unknown prerequisite concepts must be explained rather than silently assumed.
+
+---
+
+## 10. Completion Rule
+
+A component is complete only when:
+
+- architecture is respected
+- code ownership is clear
+- unexpected files = zero
+- unexpected folders = zero
+- unnecessary dependencies = zero
+- duplicate logic = zero
+- tests pass
+- experiments are reproducible
+- `FILE_MAP.md` is current
+- implementation is understood
+- claims are supported by evidence
+- no unexplained scope deviation exists
+
+Only then may the component be marked **LOCKED**.
