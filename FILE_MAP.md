@@ -202,7 +202,46 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current active component:** RRM 3.1 — Research Contract
 
-**Currently existing tracked placeholder:** `rrm/.gitkeep`
+### `rrm/RESEARCH_CONTRACT.md`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Locks the RRM research problem, label taxonomy, evidence boundaries,
+research questions, evaluation plan, and scientific claims policy.
+
+**Used by:** All later RRM dataset, tokenizer, model, training, and evaluation work.
+
+**Must NOT:** Contain final experimental results or Layer-4 moderation logic.
+
+### Current foundation files
+
+- `rrm/RESEARCH_CONTRACT.md`
+- `rrm/requirements.txt`
+- `rrm/runtime_check.py`
+
+**Layer:** Layer 3 — RRM
+
+**Purpose:** Pins the currently approved direct Python dependencies for the RRM research environment.
+
+**Used by:** RRM development, experiments, testing, and environment recreation.
+
+**Must NOT:** Become a dumping ground for dependencies that have not been explicitly approved.
+
+### `rrm/runtime_check.py`
+
+**Layer:** Layer 3 — RRM
+
+**Purpose:** Validates the locked Python runtime, approved core packages, and current CUDA/GPU availability.
+
+**Used by:** Environment setup and troubleshooting.
+
+**Must NOT:** Contain model architecture, training, dataset, or trust logic.
+
+### Current foundation files
+
+- `rrm/RESEARCH_CONTRACT.md`
+- `rrm/requirements.txt`
+- `rrm/runtime_check.py`
 
 Expected responsibilities will eventually include:
 
@@ -231,8 +270,6 @@ Every new file must have:
 - one clear responsibility
 - an approved reason to exist
 - an entry in this file
-
-Remove `rrm/.gitkeep` only when the first approved real RRM file is added.
 
 ---
 
