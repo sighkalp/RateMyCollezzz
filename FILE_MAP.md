@@ -1,181 +1,330 @@
 ﻿# RateMyCollezzz — File Map
 
-This document explains where important project files live and what each one
-does.
+This document is the navigation index for the repository.
 
-It must be updated whenever meaningful project files are created, moved,
-renamed, or removed.
+Its purpose is simple:
+
+**If someone asks where something lives, this file should help them find it.**
+
+Update this file whenever meaningful project files are:
+
+- created
+- moved
+- renamed
+- removed
+
+Do not fill this document with speculative future files.
+
+Only document files that actually exist or have been explicitly approved.
 
 ---
 
 # Root Control Files
 
-## ARCHITECTURE.md
+## `ARCHITECTURE.md`
 
 Purpose:
 
-Defines the locked five-layer architecture and layer boundaries.
+Defines the permanent five-layer architecture.
 
-Owner:
+Defines:
 
-Project architecture.
+- layer ownership
+- layer boundaries
+- RRM / Trust separation
+- 2D + 3D map requirement
+- UI migration policy
+- repository structure
+- legacy migration policy
+- architecture change policy
 
-Normal implementation work must not modify this file.
+Normal implementation tasks must not modify it.
 
 ---
 
-## IMPLEMENTATION_PLAN.md
+## `IMPLEMENTATION_PLAN.md`
 
 Purpose:
 
-Defines the currently active work and exactly what implementation is allowed.
+Defines what is currently being built.
 
-Owner:
+Contains:
 
-Project planning.
+- active layer
+- active objectives
+- RRM build sequence
+- allowed work
+- forbidden work
+- experiment requirements
+- completion rules
 
-Updated when approved implementation scope changes.
+This is where implementation priority changes.
 
 ---
 
-## FILE_MAP.md
+## `CLAUDE.md`
 
 Purpose:
 
-Acts as the navigation map for the repository.
+Defines mandatory implementation-agent behaviour.
 
-Every important project file should eventually be discoverable through this
-document.
-
----
-
-## CLAUDE.md
-
-Purpose:
-
-Defines mandatory behaviour for Claude Code or other implementation agents.
-
-It prevents:
+Prevents:
 
 - architecture expansion
-- uncontrolled file creation
 - scope expansion
+- unapproved files
+- unapproved folders
+- unnecessary dependencies
 - unrelated refactoring
-- duplicate logic
-- future-feature implementation
+- fabricated research results
+- uncontrolled feature removal
 
 ---
 
-## README.md
+## `FILE_MAP.md`
 
 Purpose:
 
-Human-facing project overview and navigation entry point.
+Repository navigation.
+
+This file should remain concise and accurate.
 
 ---
 
-## .gitignore
+## `README.md`
 
 Purpose:
 
-Prevents generated, local, secret, temporary, and large runtime artifacts from
-being committed.
+Human-facing overview of RateMyCollezzz.
+
+Explains:
+
+- what the project is
+- five architectural layers
+- current model direction
+- where to start reading
 
 ---
 
-# Architectural Folders
+## `.gitignore`
 
-## experience/
+Purpose:
+
+Prevent local/generated content from entering Git.
+
+Examples:
+
+- secrets
+- virtual environments
+- Python caches
+- Node modules
+- build output
+- local databases
+- model checkpoints
+- temporary artifacts
+- logs
+
+---
+
+# Layer 1 — `experience/`
+
+Ownership:
+
+User-facing experience.
+
+Current implementation priority:
+
+Defined by `IMPLEMENTATION_PLAN.md`.
+
+Known responsibilities:
+
+- Discover UI
+- search
+- filters
+- map
+- 2D navigation
+- 3D perspective navigation
+- college pins
+- college details
+- reviews UI
+- gallery UI
+- compare
+- saved colleges
+- profile UI
+- notifications UI
+- community UI
+
+Legacy frontend exists externally and will later be migrated deliberately.
+
+Do not pre-create speculative Layer-1 files while RRM work is active.
+
+---
+
+# Layer 2 — `platform/`
+
+Ownership:
+
+Django platform core.
+
+Known responsibilities:
+
+- accounts
+- profiles
+- colleges
+- locations
+- reviews
+- ratings
+- helpful votes
+- saved colleges
+- communities
+- confessions
+- discussions
+- chat
+- notifications
+- reports
+- moderation records
+- platform APIs
+- permissions
+- business logic
+
+Do not pre-create speculative Layer-2 files while RRM work is active.
+
+---
+
+# Layer 3 — `rrm/`
+
+Ownership:
+
+Review Intelligence / Review Risk Model.
+
+Current development priority:
+
+See `IMPLEMENTATION_PLAN.md`.
+
+Expected responsibilities will eventually include:
+
+- research configuration
+- dataset handling
+- annotation support
+- baseline models
+- tokenizer
+- Transformer encoder
+- Character CNN
+- feature fusion
+- multi-task heads
+- training
+- evaluation
+- robustness testing
+- inference
+
+Exact files must be added incrementally.
+
+Do NOT generate the entire RRM folder tree in advance.
+
+Every new file must have:
+
+- one clear responsibility
+- an approved reason to exist
+- an entry in this file
+
+---
+
+# Layer 4 — `trust/`
+
+Ownership:
+
+Trust & Safety.
+
+Future responsibilities may include:
+
+- individual risk aggregation
+- behavioural analysis
+- temporal analysis
+- coordination analysis
+- risk resolution
+- moderation decisions
+- campaign detection
+- reputation signals
+
+Layer 4 consumes RRM signals.
+
+It does not belong inside `rrm/`.
+
+Do not implement Trust algorithms while Layer 3 is the active scope unless
+explicitly authorized.
+
+---
+
+# Layer 5 — `ops/`
+
+Ownership:
+
+Data, Security, and Operations.
+
+Future responsibilities include:
+
+- PostgreSQL
+- Redis
+- security configuration
+- authentication infrastructure
+- WebSocket infrastructure
+- audit
+- backups
+- monitoring
+- model storage
+- deployment
+- operational performance
+
+Do not pre-create operational infrastructure during RRM research unless
+explicitly required.
+
+---
+
+# Legacy Implementation
+
+Preserved external project:
+
+`C:\Projects\RateMyCollezzz_LEGACY_20260922_115705`
+
+A ZIP backup also exists.
+
+Legacy code is reference and migration material.
+
+Migration rule:
+
+Inspect
+→ Understand
+→ Classify
+→ Preserve useful behaviour
+→ Simplify where justified
+→ Migrate deliberately
+
+Legacy code must not be blindly copied.
+
+Legacy functionality must not be blindly discarded.
+
+---
+
+# File Registration Format
+
+Whenever a meaningful new file is approved, document it using:
+
+## `path/to/file.py`
 
 Layer:
 
-Layer 1 — Experience
+Layer X
 
-Current state:
+Purpose:
 
-EMPTY / NOT STARTED
+One concise description.
 
-Current file:
+Used by:
 
-.gitkeep
+Relevant components.
 
----
+Must NOT:
 
-## platform/
+Responsibility that belongs elsewhere.
 
-Layer:
-
-Layer 2 — Platform Core
-
-Current state:
-
-EMPTY / NOT STARTED
-
-Current file:
-
-.gitkeep
-
----
-
-## rrm/
-
-Layer:
-
-Layer 3 — Review Intelligence / RRM
-
-Current state:
-
-EMPTY / NOT STARTED
-
-Current file:
-
-.gitkeep
-
----
-
-## trust/
-
-Layer:
-
-Layer 4 — Trust & Safety
-
-Current state:
-
-EMPTY / NOT STARTED
-
-Current file:
-
-.gitkeep
-
----
-
-## ops/
-
-Layer:
-
-Layer 5 — Data / Security / Operations
-
-Current state:
-
-EMPTY / NOT STARTED
-
-Current file:
-
-.gitkeep
-
----
-
-# Legacy Project
-
-Previous project implementation is intentionally stored outside this
-repository.
-
-It is reference material only.
-
-No legacy file should be migrated without:
-
-1. inspection
-2. architectural classification
-3. usefulness review
-4. approval
-5. controlled migration or reconstruction
+This format keeps ownership obvious.

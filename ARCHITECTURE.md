@@ -2,63 +2,160 @@
 
 ## 1. Purpose
 
-RateMyCollezzz is a student-first college discovery and review platform.
+RateMyCollezzz is a student-first college discovery, review, community,
+and trust platform.
 
-The project is intentionally divided into five architectural layers.
+The project uses five architectural layers.
 
-The purpose of this structure is to keep responsibilities clear, keep the
-repository understandable, prevent duplicate logic, and stop implementation
-tools from expanding the architecture without approval.
+The architecture is intentionally compact so that:
+
+- responsibilities remain obvious
+- files remain easy to locate
+- model research remains isolated from platform logic
+- implementation agents cannot expand the project arbitrarily
+- working functionality is preserved during refactoring
+- future development remains understandable
 
 This document is the architectural source of truth.
 
-Normal implementation work must NOT modify this file.
+Normal implementation work must NOT modify this file unless an architecture
+change is explicitly approved.
 
 ---
 
-# 2. Five-Layer Architecture
-
-## Layer 1 — Experience
+# 2. Layer 1 — Experience
 
 Folder:
 
-experience/
+`experience/`
 
 Responsibility:
 
-Everything directly related to the user-facing experience.
+Everything directly related to the user-facing interface.
 
-Examples:
+Includes:
 
-- College discovery
-- Search
-- Filters
-- 2D map
-- College details
-- Review presentation
-- Community presentation
-- Profiles
-- Compare
-- Notifications UI
-- Responsive interface
+- Discover interface
+- college search
+- filters
+- college list
+- college details
+- reviews UI
+- profiles
+- compare
+- saved colleges
+- notifications UI
+- gallery UI
+- community UI
+- map interaction
+- responsive design
+
+Layer 1 owns presentation and interaction.
 
 Layer 1 does NOT own:
 
-- Database business logic
-- Review intelligence
-- Trust decisions
-- Authentication internals
-- Persistent data storage
-
-Layer 1 communicates with Layer 2.
+- database business logic
+- RRM model logic
+- trust decisions
+- persistence infrastructure
+- security infrastructure
 
 ---
 
-## Layer 2 — Platform Core
+## 2.1 Map Requirement
+
+The map system supports two presentation modes.
+
+### 2D Mode
+
+Supports:
+
+- standard top-down map
+- zoom
+- pan
+- college selection
+- college pins
+- search/navigation
+- location exploration
+
+### 3D Perspective Mode
+
+Supports:
+
+- pitched camera
+- bearing/orientation changes
+- improved spatial navigation
+- better map perspective while exploring colleges and surrounding areas
+
+Both modes must use the same real geographic data.
+
+3D perspective MUST NOT fabricate:
+
+- campus buildings
+- college infrastructure
+- fictional terrain
+- synthetic campuses
+- fictional geographic information
+
+The 3D mode exists for map navigation and perspective.
+
+It is NOT synthetic campus reconstruction.
+
+---
+
+## 2.2 Map Visual Direction
+
+Future Layer-1 development should preserve the established UI direction:
+
+- map-centric Discover experience
+- high map clarity
+- readable roads and area labels
+- dark map visual hierarchy where appropriate
+- strong college-location pins
+- college logos inside pins
+- clear hover state
+- clearly stronger selected-pin state
+- smooth zoom
+- smooth pitch
+- smooth bearing transitions
+- 2D / 3D mode toggle
+
+Map visual improvements must not change verified geographic information.
+
+---
+
+## 2.3 UI Migration Policy
+
+Existing working Layer-1 functionality is preserved by default.
+
+Refactoring means:
+
+- reorganizing files
+- clarifying responsibilities
+- reducing unnecessary duplication
+- improving maintainability
+- improving visual design
+- improving code readability
+
+Refactoring does NOT automatically authorize feature removal.
+
+A working UI feature may only be removed when:
+
+1. it is demonstrated to be obsolete or truly duplicate, and
+2. removal is explicitly approved.
+
+The legacy frontend is therefore migration material and reference
+implementation.
+
+It is not disposable code.
+
+---
+
+# 3. Layer 2 — Platform Core
 
 Folder:
 
-platform/
+`platform/`
 
 Primary technology:
 
@@ -68,282 +165,461 @@ Responsibility:
 
 Application and business logic.
 
-Examples:
+Includes:
 
-- Accounts
-- Profiles
-- Colleges
-- Locations
-- Reviews
-- Ratings
-- Communities
-- Confessions
-- Discussions
-- Chat
-- Notifications
-- Reports
-- Moderation records
-- Platform APIs
-- Permissions
-- Business rules
+- accounts
+- profiles
+- colleges
+- college locations
+- reviews
+- ratings
+- helpful votes
+- saved colleges
+- compare support
+- communities
+- confessions
+- discussions
+- chat
+- notifications
+- reports
+- moderation records
+- platform APIs
+- permissions
+- authorization rules
+- business rules
 
 Layer 2 owns the platform domain.
 
-Layer 2 does NOT perform ML review classification.
+Layer 2 must NOT implement the RRM neural architecture.
 
-Layer 2 does NOT independently perform final trust decisions.
+Layer 2 must NOT replace Layer-4 trust decisions.
 
 ---
 
-## Layer 3 — Review Intelligence / RRM
+# 4. Layer 3 — Review Intelligence / RRM
 
 Folder:
 
-rrm/
+`rrm/`
 
 Responsibility:
 
 Understand and analyze review content.
 
-Core pipeline:
-
-Review
-  ->
-Validation
-  ->
-Duplicate / similarity checks
-  ->
-RMC tokenizer
-  ->
-Transformer Encoder
-      +
-Character CNN
-  ->
-Feature Fusion
-  ->
-Multi-task Prediction
-  ->
-Risk Signals
-
-Intended outputs include:
-
-- spam risk
-- deception risk
-- toxicity risk
-- advertising risk
-- off-topic risk
-- PII risk
-- similarity indicators
-- review-quality signals
-- optional experimental AI-like signal
-
-Core principle:
-
-RRM UNDERSTANDS.
-
-RRM does NOT make the final moderation decision.
-
-RRM must never directly delete a review.
+The RRM must remain independently testable and must expose clean contracts
+for later integration with Layer 2 and Layer 4.
 
 ---
 
-## Layer 4 — Trust & Safety
+## 4.1 RRM Pipeline
+
+Conceptual pipeline:
+
+Review
+↓
+Input Validation
+↓
+Exact Duplicate / Similarity Signals
+↓
+RMC Tokenizer
+↓
+Semantic Branch + Character Branch
+↓
+Feature Fusion
+↓
+Multi-task Prediction
+↓
+Risk Signals
+
+Semantic branch:
+
+SentencePiece tokens
+↓
+Transformer Encoder
+↓
+Contextual review representation
+
+Character branch:
+
+Raw characters
+↓
+Character CNN
+↓
+Character-level representation
+
+Then:
+
+Semantic representation
++
+Character representation
+↓
+Feature Fusion
+↓
+Multi-task Heads
+
+---
+
+## 4.2 Intended RRM Signals
+
+Primary intended signals:
+
+- spam
+- deception
+- toxicity
+- advertising
+- off-topic
+- PII
+- similarity indicators
+- review-quality signals
+
+Optional experimental signal:
+
+- AI-like writing indicator
+
+The AI-like signal must never be treated as strong proof of authorship.
+
+---
+
+## 4.3 Model Direction
+
+Current research direction includes:
+
+- custom SentencePiece tokenizer
+- English reviews
+- Hinglish reviews
+- Roman Hindi
+- Indian English
+- college terminology
+- compact Transformer encoder
+- Character CNN
+- feature fusion
+- multi-task prediction heads
+
+Current model-size design target:
+
+approximately 22–30M trainable parameters
+
+This is a DESIGN TARGET.
+
+It is NOT:
+
+- a measured result
+- a proven optimum
+- a mandatory final parameter count
+
+Final values for:
+
+- model dimensions
+- vocabulary size
+- sequence length
+- dropout
+- pooling
+- loss weighting
+- learning rate
+- thresholds
+- calibration
+- parameter count
+
+must be justified through actual experiments.
+
+---
+
+## 4.4 Research Principle
+
+Do not jump directly to the final custom model.
+
+Research progression must include:
+
+Simple Baselines
+↓
+Strong Pretrained Baselines
+↓
+Custom RRM
+↓
+Ablations
+↓
+Robustness Evaluation
+↓
+Efficiency Evaluation
+↓
+Error Analysis
+
+The custom architecture must earn its complexity through evidence.
+
+---
+
+## 4.5 RRM / Trust Boundary
+
+Core rule:
+
+**RRM UNDERSTANDS.**
+
+**TRUST DECIDES.**
+
+The RRM must NOT directly:
+
+- delete reviews
+- ban users
+- remove users
+- approve moderation cases
+- permanently reject reviews
+- make final platform moderation decisions
+
+The RRM produces evidence and risk signals.
+
+Layer 4 consumes those signals.
+
+---
+
+# 5. Layer 4 — Trust & Safety
 
 Folder:
 
-trust/
+`trust/`
 
 Responsibility:
 
 Combine evidence and determine platform-level trust actions.
 
-Possible inputs:
+Possible inputs include:
 
 - RRM outputs
-- duplicate / similarity evidence
+- similarity evidence
 - account behaviour
 - timing behaviour
 - rating patterns
 - coordination evidence
+- user reports
 - platform rules
-- reports
 
-Possible decisions:
+Possible platform decisions include:
 
 - Publish
 - Moderate
 - Hold
 - Remove from public visibility
 
-Removal from public visibility does not imply permanent destruction of
-internal evidence.
+Expected flow:
 
-Core principle:
+Review
+↓
+RRM
+↓
+Risk Signals
+↓
+Trust Engine
+↓
+Risk Resolver
+↓
+Platform Decision
 
-TRUST DECIDES.
+Layer 4 is architecturally separate from Layer 3.
 
-Layer 4 must remain separate from Layer 3.
+Layer-4 algorithms must not be implemented inside the RRM subsystem.
+
+Implementation timing is controlled by `IMPLEMENTATION_PLAN.md`.
+
+Future Layer-4 research may include:
+
+- behavioural risk
+- temporal bursts
+- account patterns
+- coordinated manipulation
+- campaign detection
+- reputation signals
+- collective opinion spam
+
+Future requirements may influence interface design.
+
+Future algorithms must not be implemented early without approval.
 
 ---
 
-## Layer 5 — Data / Security / Operations
+# 6. Layer 5 — Data / Security / Operations
 
 Folder:
 
-ops/
+`ops/`
 
 Responsibility:
 
 Cross-cutting infrastructure required by the platform.
 
-Examples:
+Includes:
 
 - PostgreSQL
 - Redis
-- WebSockets infrastructure
-- Authentication infrastructure
-- Privacy controls
-- Audit
-- Rate limiting
-- Backups
-- Monitoring
-- Model storage
-- Deployment
-- Production configuration
-- Performance operations
+- WebSocket infrastructure
+- authentication infrastructure
+- privacy controls
+- security configuration
+- audit
+- backups
+- monitoring
+- model storage
+- deployment
+- performance operations
+- rate limiting
 
 Layer 5 supports the other layers.
 
-It must not absorb their business logic.
+It must not absorb their application logic or ML responsibilities.
 
 ---
 
-# 3. Critical Data Separation
+## 6.1 Authentication Boundary
 
-Reviews may affect college ratings.
+Layer 2 owns:
 
-Community content does not affect college ratings.
+- user identity behaviour
+- roles
+- permissions
+- authorization rules
+- account-related business logic
+
+Layer 5 owns:
+
+- secure authentication infrastructure
+- credential protection
+- session/security configuration
+- secret handling
+- security middleware
+- rate limiting
+- production security controls
+
+This separation prevents duplicated authentication logic.
+
+---
+
+# 7. Critical Data Separation
+
+Reviews may contribute to college ratings.
+
+Community content does not.
 
 Therefore:
 
 Review
-  ->
-may contribute to college rating
+↓
+may affect college rating
 
 Confession
-  ->
+↓
 community content only
-  ->
-must not contribute to college rating
 
 Discussion
-  ->
+↓
 community content only
-  ->
-must not contribute to college rating
 
 Chat
-  ->
+↓
 conversation only
-  ->
-must not contribute to college rating
+
+Community popularity must never directly alter college ratings.
 
 ---
 
-# 4. Review Intelligence Boundary
+# 8. Development Order vs Architecture Order
 
-The critical system boundary is:
+Architectural layer numbers describe RESPONSIBILITY.
 
-Layer 3 = intelligence
+They do NOT require implementation to occur strictly in numerical order.
 
-Layer 4 = trust decision
+The currently active development layer and component are defined in:
 
-Expected flow:
+`IMPLEMENTATION_PLAN.md`
 
-Review
-  ->
-RRM
-  ->
-Risk Signals
-  ->
-Trust Engine
-  ->
-Risk Resolver
-  ->
-Platform Decision
+A layer may be developed independently when:
 
-The RRM must not become an autonomous moderation engine.
+- its boundaries remain intact
+- its contracts are documented
+- fake implementations of other layers are not created
+- its interfaces remain testable
+- future integration requirements are considered without implementing
+  future algorithms prematurely
 
 ---
 
-# 5. Repository Architecture Rule
+# 9. Repository Structure
 
 Only these five architectural root folders are permitted:
 
-experience/
-platform/
-rrm/
-trust/
-ops/
+`experience/`
 
-New top-level architectural folders require explicit architectural approval.
+`platform/`
 
-Implementation agents must not create alternative structures such as:
+`rrm/`
 
-backend/
-frontend/
-core/
-shared/
-common/
-services/
-helpers/
-engines/
+`trust/`
 
-at repository root unless this architecture is deliberately revised first.
+`ops/`
+
+Do not create alternate architectural roots such as:
+
+`backend/`
+
+`frontend/`
+
+`core/`
+
+`shared/`
+
+`common/`
+
+`services/`
+
+`engines/`
+
+unless an architecture revision is explicitly approved.
+
+Nested folders may be created only when they solve a demonstrated
+organizational problem.
+
+Folder creation is not a substitute for clear design.
 
 ---
 
-# 6. Development Rule
+# 10. Legacy Project
 
-Only one architectural layer is considered ACTIVE at a time.
+The previous implementation is preserved outside the active repository.
 
-Within an active layer, work is divided into small controlled components.
+It contains valuable working UI and platform code.
 
-A future layer may be studied for compatibility, but must not be implemented
-early.
+Legacy migration process:
 
----
-
-# 7. Legacy Code
-
-The previous implementation is preserved separately outside this active
-repository.
-
-Legacy code is reference material.
-
-It must never be copied blindly into the new architecture.
-
-Migration process:
-
-Legacy component
-  ->
+Legacy Implementation
+↓
 Inspect
-  ->
+↓
 Understand
-  ->
-Validate usefulness
-  ->
-Adapt or rebuild
-  ->
-Place inside correct locked layer
+↓
+Classify Ownership
+↓
+Preserve Useful Behaviour
+↓
+Simplify Where Justified
+↓
+Migrate Into Correct Layer
+
+Legacy code must not be copied blindly.
+
+Legacy functionality must not be discarded blindly either.
 
 ---
 
-# 8. Architecture Change Policy
+# 11. Architecture Change Policy
 
-Architecture changes require deliberate approval.
+Implementation tools do not have permission to modify architecture.
 
-An implementation tool must never make architecture changes autonomously.
+If implementation appears to require:
 
-If a requested implementation appears to require an architectural change,
-the implementation must stop and report the requirement instead.
+- a new architectural layer
+- a new root folder
+- cross-layer responsibility movement
+- major model redesign
+- removal of working functionality
+- an architectural dependency not currently defined
+
+implementation must STOP and report the requirement first.
+
+Architecture changes require explicit approval.
