@@ -541,6 +541,26 @@ Legacy functionality must not be blindly discarded.
 
 ---
 
+### `rrm/baseline_tfidf_lr.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Implements a reproducible word-level TF-IDF + Logistic Regression baseline for six primary risk labels.  Serves as a comparator for the custom RRM.
+
+**Used by:** rrm/tests/test_baseline_tfidf_lr.py; evaluation pipeline.
+
+**Must NOT:** Consume Trust decisions, similarity scores, PII counts, or moderation features.  Not a production classifier.
+
+### `rrm/tests/test_baseline_tfidf_lr.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the TF-IDF + Logistic Regression baseline, covering config validation, training, leakage guards, evaluation metrics, and label masking.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain synthetic-pilot performance claims, moderation threshold logic, or Trust-layer tests.
+
 ## File Registration Format
 
 Whenever a meaningful new file is approved, document it using:
