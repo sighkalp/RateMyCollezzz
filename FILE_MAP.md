@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.7 - Semantic Encoder
+**Current active component:** RRM 3.8 - Character Branch + Feature Fusion
 
 ### `rrm/pii_detection.py`
 
@@ -319,6 +319,46 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 **Used by:** CI, local validation, development correctness checks.
 
 **Must NOT:** Contain moderation threshold logic, Trust-layer tests, task heads, or pretraining logic.
+
+### `rrm/character_branch.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Byte-level character CNN auxiliary branch (RRM 3.8). Encodes raw text as UTF-8 bytes (mapped to IDs 1..256, PAD=0), applies parallel Conv1d kernels (3,4,5) with mask-aware global max pooling, and produces a 64-dimensional character representation. No task heads, no deterministic evidence fusion, no moderation logic.
+
+**Used by:** RRM 3.8 character branch; future fusion + downstream training.
+
+**Must NOT:** Make moderation decisions, fuse deterministic TextEvidence fields, or modify the locked semantic encoder.
+
+### `rrm/tests/test_character_branch.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the byte-level character branch, covering config validation, UTF-8 preprocessing (ASCII, Hinglish, Devanagari, emoji, U+0000, lone surrogate), forward shapes, parameter count (139,904), padding invariance, window-mask behavior, empty-text exact-zero contract, initialization, gradient flow, eval determinism, and Unicode handling.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or task-head logic.
+
+### `rrm/fusion.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Parameter-free concatenation fusion (RRM 3.8). Combines the 384-dim semantic representation from RmcEncoder with the 64-dim character representation from RmcCharacterBranch into a 448-dim fused representation. Zero trainable parameters. No projection, no normalization, no task heads.
+
+**Used by:** RRM 3.8 fusion; future downstream training pipeline.
+
+**Must NOT:** Make moderation decisions, implement task heads, or modify either input representation.
+
+### `rrm/tests/test_fusion.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the parameter-free fusion module, covering output shape [B, 448], zero-parameter contract, input validation (rank, shape, dtype, device), dtype mismatch rejection, and frozen output dataclass.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or task-head logic.
 
 ### `rrm/RESEARCH_CONTRACT.md`
 
