@@ -581,6 +581,26 @@ Legacy functionality must not be blindly discarded.
 
 **Must NOT:** Contain moderation threshold logic or Trust-layer tests.
 
+### `rrm/baseline_bert.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Multilingual BERT fine-tuning baseline (RRM 3.4C). Loads `google-bert/bert-base-multilingual-cased`, fine-tunes a shared encoder with six binary classification logits, and uses UNKNOWN-aware masked BCE loss with supervised-count gradient normalization.
+
+**Used by:** `rrm/tests/test_baseline_bert.py`; evaluation pipeline.
+
+**Must NOT:** Make moderation decisions, delete reviews, ban users, or remove users. Produces risk-probability evidence only.
+
+### `rrm/tests/test_baseline_bert.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the multilingual BERT baseline, covering config validation, masked BCE loss, training loop, gradient accumulation, best-checkpoint restoration, evaluation with subset labels, artifact path safety, and model/tokenizer injection contract.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain synthetic-pilot performance claims, moderation threshold logic, or Trust-layer tests.
+
 ## File Registration Format
 
 Whenever a meaningful new file is approved, document it using:
