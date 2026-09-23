@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.4 - Baselines
+**Current active component:** RRM 3.5 - RMC Tokenizer
 
 ### `rrm/pii_detection.py`
 
@@ -279,6 +279,26 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 **Used by:** CI, local validation, development correctness checks.
 
 **Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+### `rrm/tokenizer.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** SentencePiece tokenizer infrastructure for the future custom RRM encoder. Configures and manages tokenizer training, loading, encoding, decoding, and diagnostics. Does NOT train the production 22k tokenizer; that is gated by the RRM 3.6 encoder-strategy decision.
+
+**Used by:** RRM 3.5 infrastructure; future encoder training pipeline (RRM 3.6+).
+
+**Must NOT:** Make moderation decisions, train a production tokenizer from the pilot corpus, or assume bit-for-bit reproducibility from retraining.
+
+### `rrm/tests/test_tokenizer.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the SentencePiece tokenizer infrastructure, covering config validation, tiny-corpus training, special-token IDs, encode/decode, batch encoding, max-length accounting, manifest schema, SHA-256 integrity, repository-safety, normalization identity, Hinglish/Roman Hindi handling, and diagnostics.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or production tokenizer training.
 
 ### `rrm/RESEARCH_CONTRACT.md`
 
