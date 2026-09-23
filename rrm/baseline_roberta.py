@@ -1,17 +1,24 @@
-"""Multilingual BERT fine-tuning baseline for the RRM (RRM 3.4C).
+"""RoBERTa fine-tuning baseline for the RRM (RRM 3.4D).
 
 This module wraps the shared transformer-baseline machinery in
-``baseline_transformer_common`` with BERT-specific model loading and
-configuration.  It loads pretrained weights from
-``google-bert/bert-base-multilingual-cased``, fine-tunes a shared
-encoder with six binary classification logits, and uses a custom
-masked BCE loss that independently excludes UNKNOWN=-1 labels.
+``baseline_transformer_common`` with RoBERTa-specific model loading
+and configuration.  It loads pretrained weights from
+``FacebookAI/roberta-base``, fine-tunes a shared encoder with six
+binary classification logits, and uses the same custom masked BCE
+loss that excludes UNKNOWN=-1 labels.
 
-The common training loop, loss functions, evaluation, and artifact
-policy live in ``rrm.baseline_transformer_common``.  This module
-contains only BERT-specific pieces: the config dataclass, the fitted
-container, the production/tiny model loaders, and thin orchestrator
-wrappers.
+Research provenance:
+    - RoBERTa baseline: REQUIRED BY PROJECT PLAN (IMPLEMENTATION_PLAN.md
+      section 3.4)
+    - FacebookAI/roberta-base: PAPER-DERIVED (Liu et al., RoBERTa)
+    - Shared 6-logit multi-label architecture: RRM EXPERIMENTAL DESIGN
+      CHOICE
+    - Custom masked BCE with safe targets: STANDARD ENGINEERING PRACTICE
+    - Supervised-position gradient normalization (divide before clip):
+      RRM EXPERIMENTAL DESIGN CHOICE
+    - fp16 + gradient checkpointing for 4 GB VRAM: STANDARD ENGINEERING
+      PRACTICE
+    - All numeric hyperparameters: RRM EXPERIMENTAL DESIGN CHOICES
 
 Architectural note:
     RRM UNDERSTANDS. TRUST DECIDES.
@@ -19,21 +26,6 @@ Architectural note:
     This baseline produces risk-probability evidence only.  It makes
     NO moderation decisions.  No Trust-layer action may depend on
     this component.
-
-Research provenance:
-    - BERT baseline: REQUIRED BY PROJECT PLAN (IMPLEMENTATION_PLAN.md
-      section 3.4)
-    - google-bert/bert-base-multilingual-cased: PAPER-DERIVED (Devlin
-      et al., multilingual BERT)
-    - Shared 6-logit multi-label architecture: RRM EXPERIMENTAL DESIGN
-      CHOICE
-    - Custom masked BCE with safe targets: STANDARD ENGINEERING PRACTICE
-      (PyTorch BCE requires targets in [0, 1])
-    - Supervised-position gradient normalization (divide before clip):
-      RRM EXPERIMENTAL DESIGN CHOICE
-    - fp16 + gradient checkpointing for 4 GB VRAM: STANDARD
-      ENGINEERING PRACTICE
-    - All numeric hyperparameters: RRM EXPERIMENTAL DESIGN CHOICES
 """
 
 from __future__ import annotations
@@ -47,9 +39,9 @@ from typing import Any, Optional, Tuple
 import torch
 from transformers import (
     AutoTokenizer,
-    BertConfig,
-    BertForSequenceClassification,
-    BertTokenizer,
+    RobertaConfig,
+    RobertaForSequenceClassification,
+    RobertaTokenizer,
 )
 
 from rrm.baseline_transformer_common import (
@@ -60,6 +52,8 @@ from rrm.baseline_transformer_common import (
     ReviewDataset,
     _collate_fn,
     _compute_label_metrics,
+    _evaluate_transformer_baseline,
+    _fit_transformer_baseline,
     _tokenize_records,
     masked_bce_with_logits,
     set_transformer_seed,
@@ -70,9 +64,9 @@ from rrm.baseline_tfidf_lr import (
 )
 
 # ---------------------------------------------------------------------------
-# Backward-compatible aliases for tests importing from this module
+# Backward-compatible aliases
 # ---------------------------------------------------------------------------
-set_bert_seed = set_transformer_seed
+set_roberta_seed = set_transformer_seed
 
 
 # ---------------------------------------------------------------------------
@@ -81,11 +75,12 @@ set_bert_seed = set_transformer_seed
 
 
 @dataclasses.dataclass(frozen=True)
-class BertBaselineConfig:
-    """Immutable configuration for the BERT baseline.
+class RobertaBaselineConfig:
+    """Immutable configuration for the RoBERTa baseline.
 
     All numeric values are initial engineering defaults, NOT proven
-    optimal hyperparameters.
+    optimal hyperparameters.  These match the BERT baseline for
+    controlled comparison.
 
     Attributes
     ----------
@@ -123,7 +118,7 @@ class BertBaselineConfig:
         Enable gradient checkpointing to reduce activation memory.
     """
 
-    model_name: str = "google-bert/bert-base-multilingual-cased"
+    model_name: str = "FacebookAI/roberta-base"
     model_revision: Optional[str] = None
 
     max_seq_length: int = 128
@@ -199,16 +194,16 @@ class BertBaselineConfig:
 
 
 @dataclasses.dataclass(frozen=True)
-class FittedBertBaseline:
-    """Immutable container for a fitted BERT baseline.
+class FittedRobertaBaseline:
+    """Immutable container for a fitted RoBERTa baseline.
 
     Attributes
     ----------
-    model : BertForSequenceClassification
+    model : RobertaForSequenceClassification
         The fine-tuned model.
-    tokenizer : PreTrainedTokenizer
+    tokenizer : RobertaTokenizer
         The tokenizer used for this baseline.
-    config : BertBaselineConfig
+    config : RobertaBaselineConfig
         Configuration used for training.
     device : str
         Device description the model is on.
@@ -222,9 +217,9 @@ class FittedBertBaseline:
         Requested model revision (not the resolved commit hash).
     """
 
-    model: Any  # BertForSequenceClassification
-    tokenizer: Any  # PreTrainedTokenizer
-    config: BertBaselineConfig
+    model: Any  # RobertaForSequenceClassification
+    tokenizer: Any  # RobertaTokenizer
+    config: RobertaBaselineConfig
     device: str
     best_epoch: int
     best_validation_macro_f1: Optional[float]
@@ -238,9 +233,9 @@ class FittedBertBaseline:
 
 
 def _load_production_model(
-    config: BertBaselineConfig,
+    config: RobertaBaselineConfig,
     device: torch.device,
-) -> Tuple[BertForSequenceClassification, Any]:
+) -> Tuple[RobertaForSequenceClassification, Any]:
     """Load pretrained model and tokenizer from Hugging Face.
 
     This is the production loading path.  It requires network access
@@ -248,7 +243,7 @@ def _load_production_model(
 
     Parameters
     ----------
-    config : BertBaselineConfig
+    config : RobertaBaselineConfig
         Configuration with model_name and optional model_revision.
     device : torch.device
         Target device.
@@ -262,15 +257,15 @@ def _load_production_model(
         revision=config.model_revision,
     )
 
-    # Build a BertConfig with num_labels=6 and multi_label problem type
-    model_config = BertConfig.from_pretrained(
+    # Build a RobertaConfig with num_labels=6 and multi_label problem type
+    model_config = RobertaConfig.from_pretrained(
         config.model_name,
         revision=config.model_revision,
         num_labels=len(PRIMARY_LABELS),
         problem_type="multi_label_classification",
     )
 
-    model = BertForSequenceClassification.from_pretrained(
+    model = RobertaForSequenceClassification.from_pretrained(
         config.model_name,
         revision=config.model_revision,
         config=model_config,
@@ -286,21 +281,27 @@ def _load_production_model(
 
 
 def _create_tiny_model_and_tokenizer(
-    vocab_size: int = 100,
+    vocab_size: int = 300,
     max_position_embeddings: int = 64,
-) -> Tuple[BertForSequenceClassification, Any]:
-    """Create a tiny BERT model and tokenizer for offline unit tests.
+) -> Tuple[RobertaForSequenceClassification, Any]:
+    """Create a tiny RoBERTa model and tokenizer for offline unit tests.
 
     Uses randomly initialized weights.  Does NOT download anything.
 
-    The temporary directory for the vocab file is cleaned up before
-    this function returns, using ``tempfile.TemporaryDirectory()``
-    as a context manager.
+    The tokenizer is trained with ``tokenizers.ByteLevelBPETokenizer``
+    on a small deterministic corpus inside a ``tempfile.TemporaryDirectory``.
+    The temporary directory is cleaned up before this function returns.
+    The tokenizer caches the vocabulary and remains usable afterward.
+
+    The tokenizer's actual vocabulary size is determined from the
+    instantiated tokenizer, and the model config's ``vocab_size`` is
+    guaranteed to be at least as large as every tokenizer ID.
 
     Parameters
     ----------
     vocab_size : int
-        Vocabulary size for the tiny config.
+        Target vocabulary size for BPE training.  Must be >= 256 to
+        accommodate byte-level BPE's initial 256 byte tokens.
     max_position_embeddings : int
         Maximum position embeddings.
 
@@ -308,32 +309,71 @@ def _create_tiny_model_and_tokenizer(
     -------
     (model, tokenizer)
     """
+    if vocab_size < 256:
+        raise ValueError(
+            f"RoBERTa byte-level BPE requires vocab_size >= 256 "
+            f"(to hold byte tokens 0-255), got {vocab_size}."
+        )
+
+    from tokenizers import ByteLevelBPETokenizer
+
     label2id = {label: i for i, label in enumerate(PRIMARY_LABELS)}
     id2label = {i: label for label, i in label2id.items()}
 
-    tiny_config = BertConfig(
-        vocab_size=vocab_size,
+    # Representative corpus for tokenizer training (fixture strings only)
+    corpus_lines = [
+        "Good college and helpful faculty.",
+        "GOOD College!!!",
+        "placement bahut accha hai",
+        "hostel thik hai but mess average",
+        "coooool campus",
+        "fees 120000 per year",
+        "Great placement with high package",
+        "bad hostel worst mess food",
+        "ACCHA infrastructure hai bahut",
+        "campus life is awesome!!",
+        "123 456 789 numbers here",
+        "sooo goood sooo baaad",
+    ]
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        corpus_file = os.path.join(tmpdir, "corpus.txt")
+        with open(corpus_file, "w", encoding="utf-8") as f:
+            for line in corpus_lines:
+                f.write(line + "\n")
+
+        # Train ByteLevelBPETokenizer
+        tokenizer_bpe = ByteLevelBPETokenizer()
+        tokenizer_bpe.train(
+            files=[corpus_file],
+            vocab_size=vocab_size,
+            min_frequency=1,
+            special_tokens=["<s>", "<pad>", "</s>", "<unk>", "<mask>"],
+        )
+
+        # Save and load tokenizer via from_pretrained (most reliable)
+        import glob as _glob
+
+        # save_model creates vocab.json + merges.txt
+        tokenizer_bpe.save_model(tmpdir)
+        tokenizer = RobertaTokenizer.from_pretrained(tmpdir)
+
+    # Determine actual vocabulary size from the instantiated tokenizer
+    actual_vocab_size = len(tokenizer)
+
+    # Build model with vocab_size guaranteed to cover every tokenizer ID
+    model_config = RobertaConfig(
+        vocab_size=max(vocab_size, actual_vocab_size),
         hidden_size=8,
         num_hidden_layers=1,
         num_attention_heads=2,
         intermediate_size=16,
         max_position_embeddings=max_position_embeddings,
+        type_vocab_size=1,
         label2id=label2id,
         id2label=id2label,
     )
-    model = BertForSequenceClassification(tiny_config)
-
-    # Create a minimal vocab and instantiate a BertTokenizer directly
-    tokens = ["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"]
-    for i in range(vocab_size - len(tokens)):
-        tokens.append(f"w{i}")
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        vocab_file = os.path.join(tmpdir, "vocab.txt")
-        with open(vocab_file, "w", encoding="utf-8") as f:
-            f.write("\n".join(tokens))
-
-        tokenizer = BertTokenizer(vocab_file)
+    model = RobertaForSequenceClassification(model_config)
 
     return model, tokenizer
 
@@ -343,17 +383,17 @@ def _create_tiny_model_and_tokenizer(
 # ---------------------------------------------------------------------------
 
 
-def fit_bert_baseline(
+def fit_roberta_baseline(
     train_records: Iterable[Mapping[str, Any]],
     validation_records: Iterable[Mapping[str, Any]],
     *,
-    config: Optional[BertBaselineConfig] = None,
+    config: Optional[RobertaBaselineConfig] = None,
     artifact_dir: Optional[Path] = None,
     model: Optional[Any] = None,
     tokenizer: Optional[Any] = None,
     device: Optional[str] = None,
-) -> FittedBertBaseline:
-    """Fine-tune a multilingual BERT baseline on training data.
+) -> FittedRobertaBaseline:
+    """Fine-tune a RoBERTa baseline on training data.
 
     Parameters
     ----------
@@ -363,15 +403,15 @@ def fit_bert_baseline(
     validation_records : iterable of mapping-like
         Validation records with the same structure.  Used for
         end-of-epoch evaluation and best-checkpoint selection.
-    config : BertBaselineConfig or None
+    config : RobertaBaselineConfig or None
         Configuration.  Uses defaults if None.
     artifact_dir : Path or None
         Directory for saving best checkpoints.  If None, no
         checkpoints are saved.  Must be an explicitly provided
         external path — no repository-local fallback.
-    model : BertForSequenceClassification or None
+    model : RobertaForSequenceClassification or None
         Pre-created model.  If None, loads from ``config.model_name``.
-    tokenizer : PreTrainedTokenizer or None
+    tokenizer : RobertaTokenizer or None
         Pre-created tokenizer.  If None, loads from
         ``config.model_name``.
     device : str or None
@@ -380,7 +420,7 @@ def fit_bert_baseline(
 
     Returns
     -------
-    FittedBertBaseline
+    FittedRobertaBaseline
         Fitted baseline with model, tokenizer, and metadata.
 
     Raises
@@ -393,7 +433,7 @@ def fit_bert_baseline(
         On CUDA OOM during the smoke probe.
     """
     if config is None:
-        config = BertBaselineConfig()
+        config = RobertaBaselineConfig()
 
     # --- Device ---
     if device is not None:
@@ -427,8 +467,6 @@ def fit_bert_baseline(
             model.config.use_cache = False
 
     # --- Delegate to common training engine ---
-    from rrm.baseline_transformer_common import _fit_transformer_baseline
-
     training_result = _fit_transformer_baseline(
         model=model,
         tokenizer=tokenizer,
@@ -454,7 +492,7 @@ def fit_bert_baseline(
         model_revision=config.model_revision,
     )
 
-    return FittedBertBaseline(
+    return FittedRobertaBaseline(
         model=training_result.model,
         tokenizer=training_result.tokenizer,
         config=config,
@@ -472,19 +510,19 @@ def fit_bert_baseline(
 
 
 @torch.no_grad()
-def evaluate_bert_baseline(
-    fitted: FittedBertBaseline,
+def evaluate_roberta_baseline(
+    fitted: FittedRobertaBaseline,
     train_records: Iterable[Mapping[str, Any]],
     eval_records: Iterable[Mapping[str, Any]],
     *,
     labels: Tuple[str, ...] = PRIMARY_LABELS,
 ) -> BaselineEvaluation:
-    """Evaluate a fitted BERT baseline.
+    """Evaluate a fitted RoBERTa baseline.
 
     Parameters
     ----------
-    fitted : FittedBertBaseline
-        Fitted baseline from :func:`fit_bert_baseline`.
+    fitted : FittedRobertaBaseline
+        Fitted baseline from :func:`fit_roberta_baseline`.
     train_records : iterable of mapping-like
         Training records (used for leakage validation).
     eval_records : iterable of mapping-like
@@ -498,8 +536,6 @@ def evaluate_bert_baseline(
     BaselineEvaluation
         Evaluation metrics per label, plus macro-F1.
     """
-    from rrm.baseline_transformer_common import _evaluate_transformer_baseline
-
     return _evaluate_transformer_baseline(
         model=fitted.model,
         tokenizer=fitted.tokenizer,

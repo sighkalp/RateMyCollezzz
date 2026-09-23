@@ -585,9 +585,29 @@ Legacy functionality must not be blindly discarded.
 
 **Layer:** Layer 3 — Review Intelligence / RRM
 
-**Purpose:** Multilingual BERT fine-tuning baseline (RRM 3.4C). Loads `google-bert/bert-base-multilingual-cased`, fine-tunes a shared encoder with six binary classification logits, and uses UNKNOWN-aware masked BCE loss with supervised-count gradient normalization.
+**Purpose:** Multilingual BERT fine-tuning baseline (RRM 3.4C). Loads `google-bert/bert-base-multilingual-cased`, delegates training/evaluation/loss to the shared transformer common module. Thin BERT-specific wrapper.
 
 **Used by:** `rrm/tests/test_baseline_bert.py`; evaluation pipeline.
+
+**Must NOT:** Make moderation decisions, delete reviews, ban users, or remove users. Produces risk-probability evidence only.
+
+### `rrm/baseline_transformer_common.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Shared model-independent machinery for transformer baselines (RRM 3.4). Owns the masked BCE loss, supervised-position gradient normalization, artifact validation, record validation, evaluability gate, seed setting, dataset/collate/tokenization, per-label metrics, and the generic training and evaluation engines used by both BERT and RoBERTa wrappers.
+
+**Used by:** `rrm/baseline_bert.py`, `rrm/baseline_roberta.py`.
+
+**Must NOT:** Load pretrained models, make moderation decisions, or implement Trust-layer logic.
+
+### `rrm/baseline_roberta.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** RoBERTa fine-tuning baseline (RRM 3.4D). Loads `FacebookAI/roberta-base`, delegates training/evaluation/loss to the shared transformer common module. Thin RoBERTa-specific wrapper.
+
+**Used by:** `rrm/tests/test_baseline_roberta.py`; evaluation pipeline.
 
 **Must NOT:** Make moderation decisions, delete reviews, ban users, or remove users. Produces risk-probability evidence only.
 
@@ -596,6 +616,16 @@ Legacy functionality must not be blindly discarded.
 **Layer:** Layer 3 — Review Intelligence / RRM
 
 **Purpose:** Pytest test suite for the multilingual BERT baseline, covering config validation, masked BCE loss, training loop, gradient accumulation, best-checkpoint restoration, evaluation with subset labels, artifact path safety, and model/tokenizer injection contract.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain synthetic-pilot performance claims, moderation threshold logic, or Trust-layer tests.
+
+### `rrm/tests/test_baseline_roberta.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the RoBERTa baseline, covering config validation, training loop, gradient accumulation, best-checkpoint restoration, evaluation with subset labels, artifact path safety, injection contract, tokenizer-shaped batches, and shared common engine integration.
 
 **Used by:** CI, local validation, development correctness checks.
 
