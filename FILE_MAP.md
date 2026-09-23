@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.5 - RMC Tokenizer
+**Current active component:** RRM 3.7 - Semantic Encoder
 
 ### `rrm/pii_detection.py`
 
@@ -299,6 +299,26 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 **Used by:** CI, local validation, development correctness checks.
 
 **Must NOT:** Contain moderation threshold logic, Trust-layer tests, or production tokenizer training.
+
+### `rrm/encoder.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Custom RMC Transformer semantic encoder (RRM 3.7). Implements the permanent encoder architecture: token + position embeddings, Pre-LN Transformer blocks, final LayerNorm, and first-token semantic representation. No pooler, no task heads, no teacher, no MLM head.
+
+**Used by:** RRM 3.7 encoder tests; future pretraining/distillation pipeline (RRM 3.7+).
+
+**Must NOT:** Return task logits, MLM logits, teacher projections, or Trust decisions.
+
+### `rrm/tests/test_encoder.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the custom RMC semantic encoder, covering config validation, parameter count (22,743,552), architecture structure (18 LayerNorms, 8 blocks, no pooler), forward shapes, attention mask correctness, first-token contract, initialization, gradient flow, eval determinism, and input validation.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, task heads, or pretraining logic.
 
 ### `rrm/RESEARCH_CONTRACT.md`
 
