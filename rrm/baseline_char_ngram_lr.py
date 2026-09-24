@@ -42,8 +42,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
+from rrm.labels import PRIMARY_LABELS
 from rrm.baseline_tfidf_lr import (
-    PRIMARY_LABELS,
     BaselineEvaluation,
     FittedTfidfLogRegBaseline,
     TfidfLogRegConfig,

@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.8 - Character Branch + Feature Fusion
+**Current active component:** RRM 3.9 - Multi-task Heads + Training Infrastructure
 
 ### `rrm/pii_detection.py`
 
@@ -359,6 +359,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 **Used by:** CI, local validation, development correctness checks.
 
 **Must NOT:** Contain moderation threshold logic, Trust-layer tests, or task-head logic.
+
 
 ### `rrm/RESEARCH_CONTRACT.md`
 
@@ -710,6 +711,106 @@ Legacy functionality must not be blindly discarded.
 **Used by:** CI, local validation, development correctness checks.
 
 **Must NOT:** Contain synthetic-pilot performance claims, moderation threshold logic, or Trust-layer tests.
+
+### `rrm/labels.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Defines the neutral canonical label contract: PRIMARY_LABELS tuple, UNKNOWN_LABEL sentinel, NUM_PRIMARY_LABELS constant. Centralizes label definitions so all RRM modules (baselines, multitask heads, training, evaluation, checkpointing) reference a single source of truth. Prevents label-order drift across modules.
+
+**Used by:** All RRM modules requiring label information (baselines, multitask heads, training, evaluation, checkpoint, runtime check).
+
+**Must NOT:** Be modified without coordinated updates to all consuming modules and checkpoint validation.
+
+### `rrm/multitask.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Implements multi-task classification heads (Linear[448, 6]) and the top-level RmcMultiTaskModel that composes the full pipeline: encoder → character branch → fusion → heads. Defines frozen output dataclasses (RmcMultiTaskOutput, RmcMultiTaskFeatures). Supports freezing the semantic encoder via requires_grad manipulation.
+
+**Used by:** Training pipeline (RRM 3.9); future deployment inference; evaluation and ablation analysis.
+
+**Must NOT:** Make moderation decisions, delete reviews, ban users, or remove users. Produces logits/evidence only.
+
+### `rrm/training.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Neutral training utilities: masked BCE loss with UNKNOWN label exclusion (masked_bce_sum_and_count), gradient accumulation state tracking (GradientAccumulator), and optimizer-step boundary with AMP support (optimizer_step_with_accumulation). Loss normalization is global supervised-position (not per-microbatch average). Correctly handles variable UNKNOWN density across microbatches.
+
+**Used by:** RRM 3.9 training pipeline; transformer baseline training; future custom model training.
+
+**Must NOT:** Make moderation decisions, apply thresholds, or implement trust-layer logic.
+
+### `rrm/evaluation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Per-task metric computation with UNKNOWN masking (compute_task_metrics), macro metric aggregation excluding unavailable tasks (aggregate_macro_metrics), and inference signal formatting (format_inference_signals). Follows the RRM 3.9 scientific reporting contract: one-class tasks excluded from headline macro metrics, no zero-fill for unavailable tasks.
+
+**Used by:** RRM 3.9 evaluation pipeline; baseline evaluation; future deployment signal formatting.
+
+**Must NOT:** Make moderation decisions, apply thresholds as policy, or implement trust-layer logic.
+
+### `rrm/checkpoint.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Checkpoint metadata schema (CheckpointMetadata frozen dataclass) and save/load utilities with strict load-time validation. Prevents silent label-order mismatches, dimension mismatches, and threshold-length mismatches between training and deployment checkpoints. Supports both resume checkpoints (with optimizer/scheduler state) and deployment checkpoints (model weights only).
+
+**Used by:** RRM 3.9 training pipeline; future deployment loading; CI validation.
+
+**Must NOT:** Contain moderation threshold logic or trust-layer decisions.
+
+### `rrm/tests/test_labels.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the canonical label contract (rrm/labels.py), covering PRIMARY_LABELS immutability, UNKNOWN_LABEL value, NUM_PRIMARY_LABELS consistency, cross-module import consistency, and _VALID_LABEL_VALUES completeness.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or baseline-specific tests.
+
+### `rrm/tests/test_multitask.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the multi-task heads (RmcMultiTaskHeads) and top-level model (RmcMultiTaskModel), covering exact parameter counts (2,694 heads, 22,886,150 total), output shapes, dtype contracts, no sigmoid/softmax, eval-mode determinism, gradient flow to frozen/trainable components, and semantic trainability control.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or pretraining logic.
+
+### `rrm/tests/test_training.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for neutral training utilities (rrm/training.py), covering masked BCE loss with UNKNOWN exclusion, GradientAccumulator state tracking, optimizer-step boundary with gradient normalization, scheduler stepping, and gradient clipping.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or baseline-specific tests.
+
+### `rrm/tests/test_evaluation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for evaluation utilities (rrm/evaluation.py), covering per-task metric computation with UNKNOWN masking, macro aggregation with None exclusion, and inference signal formatting with per-task thresholds.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or baseline-specific tests.
+
+### `rrm/tests/test_checkpoint.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for checkpoint management (rrm/checkpoint.py), covering metadata defaults and frozen dataclass, save/load roundtrip, strict load-time validation (label order, UNKNOWN_LABEL, head dimensions, thresholds length, schema version), and deployment checkpoint size.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic, Trust-layer tests, or training loop tests.
 
 ## File Registration Format
 

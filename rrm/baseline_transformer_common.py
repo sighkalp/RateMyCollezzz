@@ -49,9 +49,8 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from transformers import get_linear_schedule_with_warmup
 
+from rrm.labels import PRIMARY_LABELS, UNKNOWN_LABEL
 from rrm.baseline_tfidf_lr import (
-    PRIMARY_LABELS,
-    UNKNOWN_LABEL,
     BaselineEvaluation,
     LabelMetrics,
     _validate_records,

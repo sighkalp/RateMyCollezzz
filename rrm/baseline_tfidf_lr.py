@@ -67,23 +67,13 @@ from sklearn.metrics import (
 )
 
 from rrm.text_normalization import exact_fingerprint
+from rrm.labels import PRIMARY_LABELS, UNKNOWN_LABEL
 
 # ---------------------------------------------------------------------------
-# Constants
+# Valid label value set
 # ---------------------------------------------------------------------------
 
-PRIMARY_LABELS: Tuple[str, ...] = (
-    "spam",
-    "deception",
-    "toxicity",
-    "advertising",
-    "off_topic",
-    "pii",
-)
-
-UNKNOWN_LABEL: int = -1
-
-_VALID_LABEL_VALUES = (0, 1, UNKNOWN_LABEL)
+_VALID_LABEL_VALUES = frozenset({0, 1, UNKNOWN_LABEL})
 
 # ---------------------------------------------------------------------------
 # Configuration
