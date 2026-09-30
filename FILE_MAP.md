@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.9 - Multi-task Heads + Training Infrastructure
+**Current active component:** RRM 3.10 - Scientific Evaluation Infrastructure
 
 ### `rrm/pii_detection.py`
 
@@ -275,6 +275,46 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 **Layer:** Layer 3 — Review Intelligence / RRM
 
 **Purpose:** Pytest test suite for text normalization and similarity evidence generation.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+### `rrm/scientific_evaluation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Scientific evaluation primitives for RRM 3.10. Implements leakage checking, bootstrap confidence intervals, task metrics computation, scientific macro aggregation, threshold selection, and comparison validation.
+
+**Used by:** rrm/experiment_results.py; RRM 3.10 scientific evaluation pipeline.
+
+**Must NOT:** Make moderation decisions, assign risk scores, or classify individual reviews.
+
+### `rrm/experiment_results.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Experiment result versioning, JSON serialization, Markdown rendering, and machine-readable schema validation for RRM 3.10. JSON is the source of truth; Markdown is derived presentation only.
+
+**Used by:** RRM 3.10 scientific evaluation pipeline; future experiment orchestration.
+
+**Must NOT:** Silently coerce malformed scientific-result schema. Schema validation occurs at the machine-readable ingestion boundary (`deserialize_scientific_result` / `result_from_json`).
+
+### `rrm/tests/test_scientific_evaluation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for scientific evaluation primitives, covering leakage checks, bootstrap CI, task metrics, macro aggregation, threshold selection, and comparison validation.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+### `rrm/tests/test_experiment_results.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for experiment result versioning, serialization, Markdown rendering, smoke result creation, provenance validation, and ingestion-boundary schema rejection.
 
 **Used by:** CI, local validation, development correctness checks.
 
