@@ -8,8 +8,8 @@ This file is intentionally detailed. A future session should read this before im
 
 # 1. PROJECT IDENTITY
 
-**Project:** RateMyCollezzz / Rate My College  
-**Local repository:** `C:\Projects\RateMyCollezzz`  
+**Project:** RateMyCollezzz / Rate My College
+**Local repository:** `C:\Projects\RateMyCollezzz`
 **Remote used during development:** `https://github.com/sighkalp/RateMyCollezzz.git`  
 **Primary branch:** `main`
 
@@ -988,8 +988,16 @@ LOCKED
 Infrastructure implementation:
 
 ```text
-IN PROGRESS
-NOT COMMIT-READY
+LOCKED + COMPLETE
+commit: efb9f4f
+feat(rrm): add scientific evaluation infrastructure
+```
+
+Final validated test result:
+
+```text
+1079 passed
+2 known pre-existing RoBERTa scheduler warnings
 ```
 
 See `CURRENT_STATE.md`.
@@ -999,10 +1007,12 @@ See `CURRENT_STATE.md`.
 Status:
 
 ```text
+NEXT / ACTIVE FOR PLANNING
 NOT STARTED
 ```
 
-Do not activate until 3.10 is reviewed, tested, committed, pushed, and locked.
+RRM 3.11 must package stable RRM outputs and contracts.
+It must not silently start production model training.
 
 ---
 
@@ -1032,6 +1042,7 @@ a8ffc00  feat(rrm): add unified deterministic prechecks
 5b86baa  char ngram logistic regression baseline
 6ef4286  feat(rrm): add multilingual BERT baseline
 81cf7ce  feat(rrm): add multitask heads and training infrastructure
+efb9f4f  feat(rrm): add scientific evaluation infrastructure
 ```
 
 Do not fabricate unknown hashes.

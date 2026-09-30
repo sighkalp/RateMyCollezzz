@@ -577,3 +577,54 @@ NOT PERFORMANCE EVIDENCE
 ```
 
 Status: LOCKED.
+
+---
+
+## D-037 — RRM 3.10 lock and finalization
+
+RRM 3.10 scientific evaluation infrastructure is LOCKED and COMPLETE.
+
+Final permanent commit:
+
+```text
+efb9f4f
+feat(rrm): add scientific evaluation infrastructure
+```
+
+Final validated test result:
+
+```text
+1079 passed
+2 known pre-existing RoBERTa scheduler warnings
+```
+
+Schema validation occurs at the machine-readable ingestion boundary:
+`deserialize_scientific_result()` and `result_from_json()` reject
+malformed metadata types via `SchemaValidationError`.
+
+Bare dataclass construction does not enforce types — that is by design.
+
+`threshold_sources` belongs in `ProvenanceMetadata`, not `ScientificResult`.
+
+Scientific status constants have one canonical owner: `scientific_evaluation.py`.
+
+Scientific macro result uses `ScientificMacroResult`, not old `MacroMetrics`.
+
+Production execution remains blocked:
+production corpus, tokenizer, pretraining, checkpoint, dataset,
+supervised RRM, final test evaluation, and performance claims
+are all unavailable or unexecuted.
+
+Status: LOCKED.
+
+---
+
+## D-038 — RRM 3.11 next phase
+
+RRM 3.11 — Packaging and Layer Contract is the NEXT phase.
+
+It must package stable RRM outputs and contracts.
+
+It must not silently start production model training.
+
+Status: PLANNING ONLY — NOT STARTED.

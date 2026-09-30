@@ -6,11 +6,11 @@ This file answers one question:
 
 > Where exactly is the project right now?
 
-Update it after every major phase, commit, push, or material blocker.
+It is the primary exact handoff point for future sessions.
 
 ---
 
-# 1. CURRENT RRM STATUS
+# 1. RRM PHASE STATUS
 
 ```text
 RRM 3.1   LOCKED
@@ -21,24 +21,21 @@ RRM 3.5   LOCKED
 RRM 3.6   LOCKED
 RRM 3.7   LOCKED
 RRM 3.8   LOCKED
-
 RRM 3.9   LOCKED + COMMITTED + PUSHED
           commit: 81cf7ce
 
-RRM 3.10  SCIENTIFIC PROTOCOL LOCKED
-          INFRASTRUCTURE IMPLEMENTATION IN PROGRESS
-          NOT COMMIT-READY
+RRM 3.10  LOCKED + COMPLETE
+          commit: efb9f4f
 
-RRM 3.11  NOT STARTED
+RRM 3.11  NEXT / ACTIVE FOR PLANNING
+          NOT STARTED
 ```
 
-Do not activate 3.11 yet.
+Do not activate RRM 3.11 implementation until planning is complete.
 
 ---
 
-# 2. LAST FULLY COMPLETED/PUSHED PHASE
-
-## RRM 3.9 — Multi-task Heads + Training Infrastructure
+# 2. LAST PERMANENTLY COMPLETED PHASE — RRM 3.9
 
 Commit:
 
@@ -52,351 +49,79 @@ Message:
 feat(rrm): add multitask heads and training infrastructure
 ```
 
-Locked regression baseline before RRM 3.10:
-
-```text
-853 passed
-2 known pre-existing RoBERTa scheduler warnings
-```
-
 ---
 
-# 3. ACTIVE PHASE — RRM 3.10
+# 3. CURRENT COMPLETED PHASE — RRM 3.10
 
-## Scientific protocol
-
-Status:
+## Commit
 
 ```text
-LOCKED
+efb9f4f
 ```
 
-Key frozen rules:
-
-- six labels remain canonical
-- UNKNOWN = -1
-- primary metric = macro-AUPRC
-- checkpoint selection = validation masked BCE
-- one-class task => discriminative metrics None
-- no arbitrary 5/5 support cutoff
-- fixed threshold = 0.5
-- decision uses `>=`
-- validation-only threshold tuning
-- initial neural comparison = 3 seeds
-- bootstrap:
-  - seed 42
-  - 1000 reps
-  - 95% percentile CI
-- required ablation:
-  - semantic-only vs full semantic+char
-- production scientific evaluation remains blocked
-
----
-
-# 4. PARTIAL RRM 3.10 IMPLEMENTATION
-
-At the last verified handoff, these partial/untracked files existed:
-
-```text
-rrm/scientific_evaluation.py
-rrm/experiment_results.py
-rrm/tests/test_scientific_evaluation.py
-```
-
-The following had not yet been completed:
-
-```text
-rrm/tests/test_experiment_results.py
-```
-
-`FILE_MAP.md` had not yet been finalized for RRM 3.10.
-
-No RRM 3.10 commit has been made.
-
----
-
-# 5. LAST VERIFIED FOCUSED TEST RESULT
-
-Command:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest rrm/tests/test_scientific_evaluation.py -q --cache-clear
-```
-
-Last verified result:
-
-```text
-114 passed
-1 failed
-```
-
-Failure:
-
-```text
-TestLineageLeakage.test_deterministic_ordering
-```
-
-Observed:
-
-```text
-expected record_id_a == "r1"
-actual   record_id_a == "r3"
-```
-
-The coding agent diagnosed insertion/input-order dependence in lineage leakage reporting.
-
-After this point, additional edits were attempted, but the coding-agent quota ended before a clean rerun.
-
-Therefore:
-
-> **Inspect the true current working tree before doing anything else.**
-
----
-
-# 6. KNOWN RRM 3.10 ISSUES TO AUDIT
-
-## A. Deterministic lineage ordering
-
-`check_lineage_leakage()` must be independent of input order.
-
-Do not weaken the test.
-
-## B. Macro type mismatch
-
-RRM 3.10 owns a scientific macro result with:
-
-```text
-macro_f1
-macro_f1_task_count
-macro_f1_task_names
-
-macro_auprc
-macro_auprc_task_count
-macro_auprc_task_names
-```
-
-Partial `experiment_results.py` was observed using old RRM 3.9 `MacroMetrics` while rendering task-name fields that old type does not own.
-
-Preferred fix:
-
-```text
-ScientificResult -> RRM 3.10 ScientificMacroResult
-```
-
-Do not modify locked `rrm/evaluation.py` merely to add name fields.
-
-## C. Private/nonexistent helper imports
-
-Partial `experiment_results.py` was observed trying to import:
-
-```text
-_task_metrics_to_dict
-_macro_metrics_to_dict
-_provenance_to_dict
-```
-
-from `scientific_evaluation.py`.
-
-Avoid unnecessary private cross-module coupling.
-
-Serialization helpers belong locally in `experiment_results.py` or should use explicit `asdict`.
-
-## D. Dependency direction
-
-Preferred:
-
-```text
-scientific_evaluation.py
-        ↓
-experiment_results.py
-```
-
-`experiment_results.py` may import public scientific structures.
-
-`scientific_evaluation.py` should not import `experiment_results.py`.
-
-No circular import.
-
-## E. Scientific status ownership
-
-Use one canonical owner for:
-
-```text
-NON_SCIENTIFIC_SYNTHETIC_SMOKE
-```
-
-and related statuses.
-
-Do not duplicate independent definitions across both modules.
-
-## F. Smoke macro path
-
-Audit smoke result construction.
-
-Use the RRM 3.10 scientific macro result path.
-
-## G. Near-duplicate reporting
-
-Audit whether implementation reports only one best match per query.
-
-The leakage contract should not silently hide relevant unresolved cross-split candidates.
-
-Reuse public similarity primitives.
-
----
-
-# 7. EXACT NEXT STEPS
-
-Start with:
-
-```powershell
-cd C:\Projects\RateMyCollezzz
-
-git status --short
-git diff -- FILE_MAP.md rrm/
-```
-
-Read actual current:
-
-```text
-rrm/scientific_evaluation.py
-rrm/experiment_results.py
-rrm/tests/test_scientific_evaluation.py
-```
-
-Check whether:
-
-```text
-rrm/tests/test_experiment_results.py
-```
-
-exists.
-
-## Focused test 1
-
-Run:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest rrm/tests/test_scientific_evaluation.py -q --cache-clear
-```
-
-Fix genuine current failures.
-
-## Focused test 2
-
-Create/finish:
-
-```text
-rrm/tests/test_experiment_results.py
-```
-
-Then run:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest rrm/tests/test_experiment_results.py -q --cache-clear
-```
-
-## FILE_MAP
-
-Register once:
-
-```text
-rrm/scientific_evaluation.py
-rrm/experiment_results.py
-rrm/tests/test_scientific_evaluation.py
-rrm/tests/test_experiment_results.py
-```
-
-Active component:
-
-```text
-RRM 3.10 - Scientific Evaluation Infrastructure
-```
-
-Do not activate RRM 3.11.
-
-## Full regression
-
-Run:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest rrm/tests/ -q --cache-clear
-```
-
-Required:
-
-- all previous 853 tests still pass
-- all new 3.10 tests pass
-- only the same 2 known RoBERTa warnings remain
-- do not predict final count
-
-## Runtime / hygiene
-
-Run:
-
-```powershell
-.\.venv\Scripts\python.exe rrm/runtime_check.py
-
-git diff -- rrm/requirements.txt
-
-git diff --check
-
-git status --short
-```
-
-Artifact scan must exclude:
-
-```text
-.venv/
-.git/
-__pycache__/
-.pytest_cache/
-```
-
-and inspect task-generated:
-
-```text
-*.pt
-*.pth
-*.bin
-*.safetensors
-*.model
-*.vocab
-tokenizer_manifest.json
-_tmp*.py
-```
-
-Do not leave generated evaluation JSON/Markdown in repo unless explicitly intended.
-
----
-
-# 8. COMMIT POLICY
-
-Do not commit/push RRM 3.10 until:
-
-1. focused scientific-evaluation tests pass
-2. experiment-results tests pass
-3. full RRM regression passes
-4. runtime check passes
-5. requirements unchanged
-6. diff check clean
-7. artifact scan clean
-8. final status limited to intended files
-9. ChatGPT/user audits final report
-
-Possible eventual commit message:
+Message:
 
 ```text
 feat(rrm): add scientific evaluation infrastructure
 ```
 
-Do not commit until approved.
+## Files
+
+```text
+rrm/scientific_evaluation.py
+rrm/experiment_results.py
+rrm/tests/test_scientific_evaluation.py
+rrm/tests/test_experiment_results.py
+```
+
+## Validation results
+
+Full RRM regression:
+
+```text
+1079 passed
+2 known pre-existing RoBERTa scheduler warnings
+```
+
+Experiment-results focused tests:
+
+```text
+111 passed
+```
+
+Scientific-evaluation focused tests:
+
+```text
+115 passed
+```
+
+Runtime check:
+
+```text
+PASS
+```
+
+Dependencies added:
+
+```text
+NONE
+```
+
+## Architecture contracts (frozen)
+
+- `ScientificResult.macro` uses `ScientificMacroResult` (not old `MacroMetrics`)
+- Scientific status constants owned by `scientific_evaluation.py`
+- `threshold_sources` belongs in `ProvenanceMetadata`
+- One-way dependency: `experiment_results.py` → `scientific_evaluation.py`
+- No circular imports
+- `deserialize_scientific_result()` validates metadata schema via `SchemaValidationError`
+- JSON serialization emits task names as arrays/lists; deserialization restores tuples
 
 ---
 
-# 9. PRODUCTION MODEL STATUS
+# 4. PRODUCTION BLOCK STATUS
 
-Still true:
+All production execution remains blocked:
 
 ```text
 production corpus:
@@ -426,33 +151,21 @@ NONE
 
 ---
 
-# 10. NEXT PHASE AFTER RRM 3.10
+# 5. NEXT PHASE
 
-Only after 3.10 is:
-
-```text
-reviewed
-tested
-committed
-pushed
-LOCKED
-```
-
-move to:
+After RRM 3.10 is reviewed and locked:
 
 ```text
 RRM 3.11 — Packaging + Layer Contract
 ```
 
-3.11 should package stable RRM outputs/contracts.
+RRM 3.11 should package stable RRM outputs/contracts.
 
 It must not silently start production model training.
 
 ---
 
-# 11. BROADER REMAINING PROJECT WORK
-
-Even after RRM 3.11:
+# 6. BROADER REMAINING PROJECT WORK
 
 ## Model/data
 
@@ -491,7 +204,6 @@ Even after RRM 3.11:
 ## UI
 
 - full multi-page product
-- not only Discover
 - landing
 - search
 - college detail
@@ -500,13 +212,6 @@ Even after RRM 3.11:
 - admin/moderation
 - contact/about/legal
 - mobile/accessibility/loading/error/empty states
-
-## Content
-
-- official logos
-- verified gallery
-- structured college data
-- no wrong-image filling
 
 ## Ops
 

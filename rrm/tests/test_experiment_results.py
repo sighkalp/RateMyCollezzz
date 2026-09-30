@@ -1139,5 +1139,3 @@ class TestExperimentResultsEdgeCases:
         result = create_smoke_result("full", seed=42)
         assert result.metadata.semantic_pretraining_identity == "none"
         assert result.metadata.supervised_checkpoint_identity == "none"
-
-
