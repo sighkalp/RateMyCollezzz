@@ -200,7 +200,37 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.10 - Scientific Evaluation Infrastructure
+**Current active component:** RRM 3.11 - Packaging + Layer Contract
+
+### `rrm/__init__.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Package initialization with explicit `__all__` defining the stable Layer-3 public API surface. Exports exactly: RrmInferenceRequest, RrmInferenceResult, RrmInferenceEngine, NeuralAvailability, RrmConfigurationError, RrmInferenceError, RRM_RUNTIME_SCHEMA_VERSION.
+
+**Used by:** Layer 2 (Platform) and Layer 4 (Trust) as the import boundary.
+
+**Must NOT:** Re-export training utilities, model configs, tokenizer internals, scientific evaluation types, or experiment-result types.
+
+### `rrm/inference.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** RRM 3.11 runtime inference contract and engine. Implements the stable public boundary that Layer 2 and Layer 4 consume. Orchestrates deterministic prechecks (always available) and optional neural inference via dependency-injected predictor. Returns evidence-only results with explicit unavailable states. Never makes moderation decisions.
+
+**Used by:** Layer 2 (Platform) and Layer 4 (Trust) as the primary RRM integration point.
+
+**Must NOT:** Load checkpoints, discover production models, instantiate random neural models as fallback, implement Trust policy, or make moderation decisions.
+
+### `rrm/tests/test_inference.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the RRM 3.11 inference contract. Tests input validation, deterministic-only mode, neural-available mode, predictor validation, serialization, immutability, package surface, and forbidden-import checks. Uses fake/stub predictors — no production checkpoint or tokenizer required.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Require production checkpoints, make network calls, or test Trust-layer logic.
 
 ### `rrm/pii_detection.py`
 
