@@ -1007,12 +1007,12 @@ See `CURRENT_STATE.md`.
 Status:
 
 ```text
-NEXT / ACTIVE FOR PLANNING
-NOT STARTED
+LOCKED + COMPLETE
+commit: a24b88b
+feat(rrm): add runtime packaging and layer contract
 ```
 
-RRM 3.11 must package stable RRM outputs and contracts.
-It must not silently start production model training.
+RRM 3.11 establishes the stable Layer-3 public runtime boundary.
 
 ---
 
@@ -1043,6 +1043,7 @@ a8ffc00  feat(rrm): add unified deterministic prechecks
 6ef4286  feat(rrm): add multilingual BERT baseline
 81cf7ce  feat(rrm): add multitask heads and training infrastructure
 efb9f4f  feat(rrm): add scientific evaluation infrastructure
+a24b88b  feat(rrm): add runtime packaging and layer contract
 ```
 
 Do not fabricate unknown hashes.

@@ -628,3 +628,129 @@ It must package stable RRM outputs and contracts.
 It must not silently start production model training.
 
 Status: PLANNING ONLY — NOT STARTED.
+
+---
+
+## D-039 — RRM 3.11 packaging contract locked
+
+RRM 3.11 Packaging + Layer Contract is COMPLETE, VALIDATED, COMMITTED, and PUSHED.
+
+Implementation commit:
+
+```text
+a24b88b
+feat(rrm): add runtime packaging and layer contract
+```
+
+Stable Layer-3 public boundary established:
+
+```text
+RRM_RUNTIME_SCHEMA_VERSION
+NeuralAvailability
+RrmConfigurationError
+RrmInferenceEngine
+RrmInferenceError
+RrmInferenceRequest
+RrmInferenceResult
+```
+
+Request contract:
+
+```text
+required:    review_text (str)
+required:    review_id (str)
+optional:    similarity_candidates (tuple of (review_id, text) pairs)
+```
+
+Result contract:
+
+```text
+deterministic_prechecks   always present
+task_scores               canonical PRIMARY_LABELS mapping or None
+neural_availability       "available" or "unavailable"
+neural_unavailable_reason required when unavailable
+model_identity            required when available, None when unavailable
+tokenizer_identity        required when available, None when unavailable
+runtime_schema_version    "1.0"
+```
+
+Task scores:
+
+```text
+UNCALIBRATED SIGMOID scores in [0, 1]
+canonical PRIMARY_LABELS keys in exact order:
+  spam, deception, toxicity, advertising, off_topic, pii
+```
+
+When neural runtime is unavailable:
+
+```text
+task_scores = None
+```
+
+No placeholders. No random outputs.
+
+Error contract:
+
+```text
+bad caller/request input:       TypeError / ValueError
+invalid engine configuration:   RrmConfigurationError
+unexpected neural runtime fail: RrmInferenceError
+expected neural absence:        structured UNAVAILABLE result
+```
+
+Immutability:
+
+```text
+RrmInferenceRequest  frozen; candidates deep-copied into immutable tuple
+RrmInferenceResult   frozen; task_scores defensively copied, read-only
+to_dict()            minimal JSON-compatible serialization API
+```
+
+Neural runtime is dependency-injected. No production checkpoint-loading
+format is frozen.
+
+RRM/Trust separation preserved:
+
+```text
+RRM produces evidence/signals.
+Trust owns policy decisions.
+```
+
+RRM 3.11 does NOT:
+
+```text
+- discover checkpoints
+- load production models
+- make Trust decisions
+- implement moderation policy
+- produce scientific performance claims
+- depend on Trust / Platform / Experience / Ops
+```
+
+Validation:
+
+```text
+focused inference tests: 134 passed
+full RRM regression:     1213 passed
+                          2 known pre-existing RoBERTa scheduler warnings
+runtime_check:           PASS
+dependencies added:      NONE
+```
+
+RRM 3.1–3.11 is now the complete locked RRM infrastructure sequence.
+
+Production assets remain unavailable:
+
+```text
+production corpus:                   NOT AVAILABLE
+production tokenizer:                NOT TRAINED
+RRM 3.6 production pretraining:      NOT EXECUTED
+production semantic checkpoint:      NOT AVAILABLE
+real labeled production dataset:     NOT AVAILABLE
+production supervised RRM:           NOT TRAINED
+real final test evaluation:          NOT EXECUTED
+scientific production performance claims: NONE
+```
+
+Status: LOCKED.
