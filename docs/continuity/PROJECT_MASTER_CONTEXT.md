@@ -1016,6 +1016,55 @@ RRM 3.11 establishes the stable Layer-3 public runtime boundary.
 
 ---
 
+# 13a. GATE A — DATASET SOURCE & PROVENANCE DECISIONS
+
+Gate A: CLOSED
+
+Close commit:
+
+```text
+b0cd51b
+docs(rrm): close production source decision gate
+```
+
+Final source decisions:
+
+HOLD (5):
+- Source 1 — Deceptive Opinion Spam Corpus
+- Source 2 — Jigsaw Toxic Comment Classification Challenge
+- Source 3 — Jigsaw Unintended Bias in Toxicity Classification
+- Source 4 — YelpCHI
+- Source 8 — Real Platform / Public College Reviews
+
+APPROVE_WITH_CONDITIONS (3):
+- Source 5 — Human-Written RMC Research Data (primary planned in-domain corpus)
+- Source 6 — Controlled RMC Research Data (controlled ground-truth supplement)
+- Source 7 — Synthetic / Derived RMC Research Data (conditional augmentation/robustness)
+
+REJECT: NONE
+
+Durable facts:
+
+- HOLD is not permanent rejection.
+- No production dataset was downloaded or ingested by Gate A.
+- deception is UNKNOWN where defensible truth provenance is absent.
+- Human-Written RMC is the primary planned in-domain corpus.
+- Controlled RMC supplies controlled ground-truth cases.
+- Synthetic / Derived RMC is limited to conditional augmentation/robustness use and must preserve provenance, inherited-rights constraints, PII controls, and parent-child grouping.
+- RRM 3.1–3.11 implementation infrastructure is locked.
+
+Gate A artifact:
+
+```text
+rrm/PRODUCTION_SOURCE_DECISION_PACKET.md
+```
+
+Active gate:
+
+Gate B — Production Annotation + Metadata Contract
+
+---
+
 # 14. KNOWN GIT HISTORY
 
 Known exact hashes:

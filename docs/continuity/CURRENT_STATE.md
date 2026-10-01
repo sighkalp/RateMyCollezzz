@@ -312,9 +312,49 @@ All RRM 3.1–3.11 phases are LOCKED.
 
 ---
 
+# 5a. GATE A — DATASET SOURCE DECISIONS
+
+Gate A: CLOSED
+
+Close commit:
+
+```text
+b0cd51b
+docs(rrm): close production source decision gate
+```
+
+Final source decisions:
+
+HOLD (5):
+- Source 1 — Deceptive Opinion Spam Corpus
+- Source 2 — Jigsaw Toxic Comment Classification Challenge
+- Source 3 — Jigsaw Unintended Bias in Toxicity Classification
+- Source 4 — YelpCHI
+- Source 8 — Real Platform / Public College Reviews
+
+APPROVE_WITH_CONDITIONS (3):
+- Source 5 — Human-Written RMC Research Data
+- Source 6 — Controlled RMC Research Data
+- Source 7 — Synthetic / Derived RMC Research Data
+
+REJECT: NONE
+
+Meaning:
+
+- HOLD is not permanent rejection.
+- HOLD sources may not enter production ingestion/training unless Gate A is deliberately reopened and unresolved conditions are cleared.
+- Human-Written RMC is the primary planned in-domain production corpus.
+- Controlled RMC is the controlled-ground-truth supplement.
+- Synthetic / Derived RMC is conditional augmentation/robustness data only.
+- deception remains UNKNOWN where defensible truth provenance is absent.
+
+---
+
 # 6. NEXT PROJECT STAGE
 
 The RRM 3.1–3.11 implementation/infrastructure sequence is complete and locked.
+
+Gate A is CLOSED. Gate B is ACTIVE.
 
 The canonical next work is defined in PROJECT_MASTER_CONTEXT.md section 17
 ("After RRM 3.11: Model Work Still Remains").

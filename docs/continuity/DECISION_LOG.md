@@ -754,3 +754,47 @@ scientific production performance claims: NONE
 ```
 
 Status: LOCKED.
+
+---
+
+## D-040 — Gate A dataset source decisions closed
+
+Gate A — Dataset Source & Provenance Plan: CLOSED.
+
+Close commit:
+
+```text
+b0cd51b
+```
+
+Final source decisions:
+
+HOLD (5):
+- Deceptive Opinion Spam Corpus
+- Jigsaw Toxic Comment Classification Challenge
+- Jigsaw Unintended Bias in Toxicity Classification
+- YelpCHI
+- Real Platform / Public College Reviews
+
+APPROVE_WITH_CONDITIONS (3):
+- Human-Written RMC Research Data
+- Controlled RMC Research Data
+- Synthetic / Derived RMC Research Data
+
+REJECT: NONE
+
+Durable interpretation:
+
+- HOLD sources remain research-relevant but are not authorized for production ingestion/training.
+- HOLD is not permanent rejection.
+- Human-Written RMC is the primary planned in-domain corpus.
+- Controlled RMC supplies controlled ground-truth cases.
+- Synthetic / Derived RMC is limited to conditional augmentation/robustness use and must preserve provenance, inherited-rights constraints, PII controls, and parent-child grouping.
+- deception is UNKNOWN where truth provenance is unavailable.
+- Gate A downloaded or ingested no production datasets.
+
+Next gate:
+
+Gate B — Production Annotation + Metadata Contract
+
+Status: LOCKED.
