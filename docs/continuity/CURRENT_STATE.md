@@ -350,37 +350,72 @@ Meaning:
 
 ---
 
+# 5b. GATE B — PRODUCTION ANNOTATION CONTRACT
+
+Gate B: CLOSED
+
+Gate B close commit:
+
+```text
+7b99bf4
+docs(rrm): freeze production annotation contract
+```
+
+Gate B contract version:
+1.0
+
+Frozen Gate B policies:
+
+- six target domains frozen
+- only deception supports UNKNOWN = -1
+- review_text is sole neural input
+- research metadata is non-neural
+- language_mix single-valued five-value taxonomy
+- college_category single-valued nullable ten-value taxonomy
+- 100% double annotation
+- minimal five-state lifecycle
+- adjudicator policy
+- Human-Written RMC rules
+- Controlled RMC rules
+- Synthetic/Derived RMC rules
+- exactly three current source types
+- no fixed synthetic percentage
+- D/E/F/G ownership
+- no Python implementation
+- metadata schema uses exact seven-column format:
+  Field, Requirement, Type/Allowed Values, Neural Input, Training Target, Owning Gate, Purpose
+
+Contract artifact:
+`rrm/PRODUCTION_ANNOTATION_CONTRACT.md` v1.0
+
+---
+
 # 6. NEXT PROJECT STAGE
 
-The RRM 3.1–3.11 implementation/infrastructure sequence is complete and locked.
+Gate B:
+CLOSED
 
-Gate A is CLOSED. Gate B is ACTIVE.
+Gate B close commit:
+7b99bf4
 
-The canonical next work is defined in PROJECT_MASTER_CONTEXT.md section 17
-("After RRM 3.11: Model Work Still Remains").
+ACTIVE GATE:
 
-Before any production model claim, the next work must address:
+Gate C — Production Corpus Collection + Annotation
 
-1. Build real RMC dataset.
-2. Establish legal/provenance/data-source controls.
-3. Finalize annotation guide.
-4. Perform real annotation.
-5. Freeze dataset version.
-6. Freeze train/validation/test manifest.
-7. Run leakage audit.
-8. Train production SentencePiece tokenizer.
-9. Execute RRM 3.6 (MLM + representation distillation).
-10. Freeze semantic checkpoint.
-11. Train supervised six-task RRM.
-12. Run 3-seed neural experiments.
-13. Run semantic-only ablation.
-14. Train/evaluate locked baselines fairly.
-15. Run final scientific evaluation.
-16. Freeze production model only after valid evidence.
+NEXT ACTION:
 
-Layer work (Trust, Django platform, UI, Ops) remains future work.
+Design and execute Gate C production corpus collection + annotation
+using only Gate A-approved sources and the frozen Gate B contract.
 
-No new numbered RRM phase has been defined for this stage yet.
+Production blocks remain:
+
+- production corpus not collected/frozen
+- production tokenizer not trained
+- RRM 3.6 production pretraining not executed
+- production semantic checkpoint unavailable
+- supervised production RRM not trained
+- final real test evaluation not executed
+- no scientific production performance claims
 
 # 7. BROADER REMAINING PROJECT WORK
 

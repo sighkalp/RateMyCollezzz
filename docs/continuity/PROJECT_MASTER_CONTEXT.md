@@ -1059,9 +1059,58 @@ Gate A artifact:
 rrm/PRODUCTION_SOURCE_DECISION_PACKET.md
 ```
 
-Active gate:
+---
 
-Gate B — Production Annotation + Metadata Contract
+# 13b. GATE B — PRODUCTION ANNOTATION + METADATA CONTRACT
+
+Gate B: CLOSED
+
+Close commit:
+
+```text
+7b99bf4
+docs(rrm): freeze production annotation contract
+```
+
+Gate B contract:
+
+```text
+rrm/PRODUCTION_ANNOTATION_CONTRACT.md
+```
+
+Version:
+1.0
+
+Status:
+FROZEN
+
+Durable Gate B policies:
+
+- canonical six risk targets frozen
+- only deception supports UNKNOWN = -1
+- review_text is sole neural input
+- research/governance metadata is non-neural
+- language_mix is single-valued with exactly:
+  ENGLISH
+  HINGLISH
+  ROMAN_HINDI
+  OTHER
+  MIXED_OTHER
+- college_category is single-valued, nullable, with exactly ten
+  non-null categories
+- 100% independent double annotation
+- trained senior third-party adjudication
+- Human-Written RMC consent/provenance policy frozen
+- Controlled RMC truth policy frozen
+- Synthetic/Derived RMC provenance policy frozen
+- PII safe-surrogate / target-input consistency policy frozen
+- Gate D/E/F/G ownership frozen
+
+---
+
+# 14. ACTIVE GATE
+
+Gate C — Production Corpus Collection + Annotation
 
 ---
 

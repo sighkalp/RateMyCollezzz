@@ -798,3 +798,69 @@ Next gate:
 Gate B — Production Annotation + Metadata Contract
 
 Status: LOCKED.
+
+---
+
+## D-041 — Gate B Production Annotation + Metadata Contract Frozen
+
+Date:
+
+2026-10-01
+
+Record:
+
+Gate B close commit:
+7b99bf4
+
+Contract:
+rrm/PRODUCTION_ANNOTATION_CONTRACT.md
+
+Version:
+1.0
+
+Decision:
+
+Gate B — Production Annotation + Metadata Contract frozen.
+
+Frozen policies:
+
+- exact six-task domains
+- only deception supports -1
+- review_text sole neural input
+- research metadata non-neural
+- PII safe-surrogate / target-input consistency
+- language taxonomy/cardinality
+- college-category taxonomy/cardinality/null semantics
+- 100% independent double annotation
+- trained senior third-party adjudication
+- Human-Written RMC consent/provenance
+- Controlled RMC truth provenance
+- Synthetic/Derived RMC parent/provenance requirements
+- downstream Gate D/E/F/G ownership
+
+Next:
+
+Gate C — Production Corpus Collection + Annotation
+
+All canonical metadata schema tables must use exactly seven columns:
+
+```text
+Field | Requirement | Type / Allowed Values | Neural Input | Training Target | Owning Gate | Purpose
+```
+
+No alternate columns (e.g., "Conditional On") in canonical tables.
+Conditionality is expressed within Type/Allowed Values or Purpose text.
+
+Affected tables:
+
+- Annotation metadata (Section 11): annotation_status, annotation_guide_version, annotator_A_id, annotator_B_id, adjudicator_id, annotation_notes
+- Provenance/source (Section 12): source_type, consent_status, contributor_pseudonym, collection_method, experiment_id, controlled_targets, deception_truth, control_protocol_id, parent_review_id, derivation_type, generation_method
+- Audit (Section 13): created_at, finalized_at
+- Later-gate (Section 14): dataset_version, split_membership, split_group_id
+
+Owning gates:
+- Annotation/provenance: B contract / C collection
+- Audit: C
+- Later-gate: D for dataset_version; E for split_membership and split_group_id
+
+Status: LOCKED.
