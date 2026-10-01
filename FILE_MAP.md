@@ -601,6 +601,16 @@ Every new file must have:
 - an approved reason to exist
 - an entry in this file
 
+### `rrm/PRODUCTION_SOURCE_DECISION_PACKET.md`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Gate A final source/provenance decision artifact. Records the factual source audit, licensing/terms findings, label compatibility, final user governance decisions, and conditions/holds used to close Gate A and inform downstream dataset-governance work.
+
+**Used by:** Gate A review and closeout; downstream dataset-governance work after user source decisions.
+
+**Must NOT:** Authorize ingestion or training for HOLD sources, override source-specific conditions or legal/licensing requirements, or serve as legal advice.
+
 ---
 
 ## Layer 4 — `trust/`
