@@ -611,6 +611,16 @@ Every new file must have:
 
 **Must NOT:** Authorize ingestion or training for HOLD sources, override source-specific conditions or legal/licensing requirements, or serve as legal advice.
 
+### `rrm/PRODUCTION_ANNOTATION_CONTRACT.md`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Gate B frozen production annotation + metadata contract. Defines the six task labels and allowed values, neural input contract (review_text only), text/PII field design, language and college-topic metadata policies, annotation workflow, double-annotation requirement, adjudication policy, and source-specific rules for Human-Written, Controlled, and Synthetic/Derived RMC.
+
+**Used by:** Annotation, dataset creation, preprocessing, training, evaluation, and reproducibility workflows.
+
+**Must NOT:** Contain moderation decisions, implement Trust-layer policy, define train/validation/test splits, or override later-gate ownership.
+
 ---
 
 ## Layer 4 — `trust/`

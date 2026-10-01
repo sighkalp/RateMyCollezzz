@@ -143,3 +143,97 @@ Never assume:
 
 Every positive label requires its own evidence.
 
+---
+
+## 35. Production Annotation Policy (Gate B)
+
+The production annotation contract is defined in:
+
+```text
+rrm/PRODUCTION_ANNOTATION_CONTRACT.md
+```
+
+That document is the canonical Gate B frozen contract.
+
+This section records the key production policies that annotators and
+annotation leads must follow.
+
+### 35.1 Double Annotation
+
+All production records require independent double annotation.
+
+Annotator B must not see Annotator A's initial labels before submitting.
+
+### 35.2 Adjudication
+
+Any risk-label disagreement routes the record to adjudication.
+
+The adjudicator is a trained senior annotation lead who was not
+Annotator A or B for that record.
+
+### 35.3 Deception
+
+Deception requires defensible ground truth.
+
+If truth status is unavailable, deception = -1 (UNKNOWN).
+
+Controlled experiment truth overrides annotator voting.
+
+### 35.4 PII
+
+Do not insert real private information into training data.
+
+If real PII appears in source text, transform it to a safe non-real
+surrogate before it enters review_text.
+
+pii = 1 only when review_text still contains a safe PII-like instance
+consistent with the target.
+
+### 35.5 College Category
+
+college_category is single-valued and nullable.
+
+Allowed values:
+
+```text
+ACADEMICS
+FACULTY
+PLACEMENTS
+HOSTEL
+INFRASTRUCTURE
+FEES
+ADMINISTRATION
+CAMPUS_LIFE
+ADMISSIONS
+MULTI_TOPIC
+```
+
+college_category = null when no legitimate college topic applies.
+
+off_topic is a six-task risk label, not a college category.
+
+### 35.6 Language
+
+language_mix is single-valued.
+
+Allowed values:
+
+```text
+ENGLISH
+HINGLISH
+ROMAN_HINDI
+OTHER
+MIXED_OTHER
+```
+
+Common college-domain words do not automatically make Roman Hindi into Hinglish.
+
+### 35.7 Status Lifecycle
+
+```text
+UNANNOTATED -> ANNOTATING -> ADJUDICATION_REQUIRED -> FINAL
+                                                    -> EXCLUDED
+```
+
+Only FINAL records enter model experiments.
+
