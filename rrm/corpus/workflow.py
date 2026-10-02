@@ -26,6 +26,7 @@ from rrm.corpus.annotation import (
     ControlledProtocolTruthStore,
     DispositionRegister,
     ReannotationRegister,
+    adjudicator_decision,
     compute_eight_dimension_disagreement,
     needs_adjudication,
 )
@@ -148,7 +149,7 @@ class CorpusWorkflow:
     def create_record(
         self,
         review_id: str,
-        source_text_raw: str,
+        source_text_raw: Optional[str],
         source_type: SourceType,
         created_at: str,
         review_text: Optional[str] = None,
@@ -161,8 +162,9 @@ class CorpusWorkflow:
         ----------
         review_id : str
             Unique record identifier.
-        source_text_raw : str
+        source_text_raw : str or None
             Secure raw source text.  Never public, never neural input.
+            None is accepted when governance does not permit retention.
         source_type : SourceType
             Source class identifier.
         created_at : str
@@ -186,9 +188,11 @@ class CorpusWorkflow:
         """
         if not isinstance(review_id, str) or not review_id.strip():
             raise TypeError("review_id must be a non-empty string")
-        if not isinstance(source_text_raw, str):
+        if source_text_raw is not None and not isinstance(
+            source_text_raw, str
+        ):
             raise TypeError(
-                f"source_text_raw must be str, "
+                f"source_text_raw must be str or None, "
                 f"got {type(source_text_raw).__name__}"
             )
         if not isinstance(source_type, SourceType):
@@ -353,11 +357,19 @@ class CorpusWorkflow:
             record,
             annotation_status=new_status,
             annotator_B_id=submission.annotator_id,
-            language_mix=submission.language_mix or record.language_mix,
-            college_category=(
-                submission.college_category or record.college_category
-            ),
         )
+        if record.source_type == SourceType.HUMAN_WRITTEN_RMC:
+            # Human-Written: carry B's intermediate language/category
+            # choices into the annotation-state record.
+            updated = dataclasses.replace(
+                updated,
+                language_mix=(
+                    submission.language_mix or record.language_mix
+                ),
+                college_category=(
+                    submission.college_category or record.college_category
+                ),
+            )
         self._update_record(updated)
         return updated
 
@@ -412,31 +424,98 @@ class CorpusWorkflow:
                 f"Cannot finalize: record {review_id} is on HOLD"
             )
 
-        # For Human-Written RMC: deception is ordinary annotator opinion
-        # and cannot establish ground truth → must be -1
-        extra_kwargs: Dict[str, Any] = {}
-        if record.source_type == SourceType.HUMAN_WRITTEN_RMC:
-            extra_kwargs["deception"] = -1
-
-        # Carry the guide version from submissions if not already on record
+        # Retrieve both submissions from the store
         sub_a = self._submissions.get_a(review_id)
         sub_b = self._submissions.get_b(review_id)
-        if (
-            record.annotation_guide_version is None
-            and sub_a is not None
-            and sub_b is not None
-        ):
-            if sub_a.annotation_guide_version == sub_b.annotation_guide_version:
-                extra_kwargs["annotation_guide_version"] = (
-                    sub_a.annotation_guide_version
-                )
 
-        updated = dataclasses.replace(
-            record,
-            annotation_status=AnnotationStatus.FINAL,
-            finalized_at=finalized_at,
-            **extra_kwargs,
-        )
+        if sub_a is None:
+            raise ValueError(
+                f"Cannot finalize via agreement: no Annotator A "
+                f"submission for {review_id}"
+            )
+        if sub_b is None:
+            raise ValueError(
+                f"Cannot finalize via agreement: no Annotator B "
+                f"submission for {review_id}"
+            )
+
+        # Must be different annotators
+        if sub_a.annotator_id == sub_b.annotator_id:
+            raise ValueError(
+                f"Cannot finalize via agreement: Annotator A and B "
+                f"must be different, both are '{sub_a.annotator_id}'"
+            )
+
+        # Both submissions must match this record
+        if sub_a.review_id != review_id:
+            raise ValueError(
+                f"Annotator A submission review_id '{sub_a.review_id}' "
+                f"does not match record '{review_id}'"
+            )
+        if sub_b.review_id != review_id:
+            raise ValueError(
+                f"Annotator B submission review_id '{sub_b.review_id}' "
+                f"does not match record '{review_id}'"
+            )
+
+        # Guide versions must match each other and the record
+        current_guide = record.annotation_guide_version
+        if current_guide is not None:
+            if sub_a.annotation_guide_version != current_guide:
+                raise ValueError(
+                    f"Annotator A guide version "
+                    f"'{sub_a.annotation_guide_version}' does not match "
+                    f"record '{current_guide}'"
+                )
+            if sub_b.annotation_guide_version != current_guide:
+                raise ValueError(
+                    f"Annotator B guide version "
+                    f"'{sub_b.annotation_guide_version}' does not match "
+                    f"record '{current_guide}'"
+                )
+        else:
+            if sub_a.annotation_guide_version != sub_b.annotation_guide_version:
+                raise ValueError(
+                    f"Annotator A guide version "
+                    f"'{sub_a.annotation_guide_version}' does not match "
+                    f"Annotator B guide version "
+                    f"'{sub_b.annotation_guide_version}'"
+                )
+            current_guide = sub_a.annotation_guide_version
+
+        # Verify no disagreement across all eight dimensions
+        disagreement = compute_eight_dimension_disagreement(sub_a, sub_b)
+        if needs_adjudication(disagreement):
+            dims = [d for d, v in disagreement.items() if v]
+            raise ValueError(
+                f"Cannot finalize via agreement: disagreement on "
+                f"dimensions {dims}"
+            )
+
+        # Materialize agreed labels into the FINAL record
+        extra_kwargs: Dict[str, Any] = {
+            "annotation_status": AnnotationStatus.FINAL,
+            "finalized_at": finalized_at,
+            "annotator_A_id": sub_a.annotator_id,
+            "annotator_B_id": sub_b.annotator_id,
+        }
+
+        if record.source_type == SourceType.HUMAN_WRITTEN_RMC:
+            # Human-Written: materialize exact agreed values from A/B
+            extra_kwargs["spam"] = sub_a.spam
+            extra_kwargs["toxicity"] = sub_a.toxicity
+            extra_kwargs["advertising"] = sub_a.advertising
+            extra_kwargs["off_topic"] = sub_a.off_topic
+            extra_kwargs["pii"] = sub_a.pii
+            extra_kwargs["language_mix"] = sub_a.language_mix
+            extra_kwargs["college_category"] = sub_a.college_category
+            extra_kwargs["deception"] = -1
+
+        # annotation_guide_version from submissions if not already set
+        if current_guide is not None:
+            extra_kwargs["annotation_guide_version"] = current_guide
+
+        updated = dataclasses.replace(record, **extra_kwargs)
         self._update_record(updated)
         return updated
 
@@ -488,12 +567,138 @@ class CorpusWorkflow:
                 f"Cannot finalize: record {review_id} is on HOLD"
             )
 
-        updated = dataclasses.replace(
-            record,
-            annotation_status=AnnotationStatus.FINAL,
-            adjudicator_id=adjudicator_id,
-            finalized_at=finalized_at,
-        )
+        # Retrieve A and B from the store
+        sub_a = self._submissions.get_a(review_id)
+        sub_b = self._submissions.get_b(review_id)
+
+        if sub_a is None:
+            raise ValueError(
+                f"Cannot finalize via adjudication: no Annotator A "
+                f"submission for {review_id}"
+            )
+        if sub_b is None:
+            raise ValueError(
+                f"Cannot finalize via adjudication: no Annotator B "
+                f"submission for {review_id}"
+            )
+
+        # BLOCKER B: A and B must be different annotators
+        if sub_a.annotator_id == sub_b.annotator_id:
+            raise ValueError(
+                f"Cannot finalize via adjudication: Annotator A and B "
+                f"must be different, both are '{sub_a.annotator_id}'"
+            )
+
+        if adjudicator_id == sub_a.annotator_id:
+            raise ValueError(
+                f"Adjudicator must not be Annotator A "
+                f"('{sub_a.annotator_id}')"
+            )
+        if adjudicator_id == sub_b.annotator_id:
+            raise ValueError(
+                f"Adjudicator must not be Annotator B "
+                f"('{sub_b.annotator_id}')"
+            )
+
+        if sub_a.review_id != review_id:
+            raise ValueError(
+                f"Annotator A submission review_id '{sub_a.review_id}' "
+                f"does not match record '{review_id}'"
+            )
+        if sub_b.review_id != review_id:
+            raise ValueError(
+                f"Annotator B submission review_id '{sub_b.review_id}' "
+                f"does not match record '{review_id}'"
+            )
+
+        # BLOCKER C: guide versions must be compatible
+        if sub_a.annotation_guide_version != sub_b.annotation_guide_version:
+            raise ValueError(
+                f"Annotator A guide version "
+                f"'{sub_a.annotation_guide_version}' does not match "
+                f"Annotator B guide version "
+                f"'{sub_b.annotation_guide_version}'"
+            )
+        current_guide = sub_a.annotation_guide_version
+        if record.annotation_guide_version is not None:
+            if current_guide != record.annotation_guide_version:
+                raise ValueError(
+                    f"Annotator guide version '{current_guide}' does "
+                    f"not match record '{record.annotation_guide_version}'"
+                )
+
+        if not isinstance(adjudicator_choices, dict):
+            raise TypeError(
+                f"adjudicator_choices must be a dict, "
+                f"got {type(adjudicator_choices).__name__}"
+            )
+
+        resolved = adjudicator_decision(sub_a, sub_b, adjudicator_choices)
+
+        extra_kwargs: Dict[str, Any] = {
+            "annotation_status": AnnotationStatus.FINAL,
+            "adjudicator_id": adjudicator_id,
+            "finalized_at": finalized_at,
+            "annotator_A_id": sub_a.annotator_id,
+            "annotator_B_id": sub_b.annotator_id,
+        }
+
+        if record.source_type == SourceType.HUMAN_WRITTEN_RMC:
+            # Human-Written: materialize adjudicator's resolved values
+            extra_kwargs["spam"] = int(resolved.get("spam", sub_a.spam))
+            extra_kwargs["toxicity"] = int(resolved.get("toxicity", sub_a.toxicity))
+            extra_kwargs["advertising"] = int(
+                resolved.get("advertising", sub_a.advertising)
+            )
+            extra_kwargs["off_topic"] = int(resolved.get("off_topic", sub_a.off_topic))
+            extra_kwargs["pii"] = int(resolved.get("pii", sub_a.pii))
+
+            # Type-safe enum handling for language_mix
+            lm_val = resolved.get("language_mix")
+            if lm_val is None:
+                extra_kwargs["language_mix"] = None
+            elif isinstance(lm_val, LanguageMix):
+                extra_kwargs["language_mix"] = lm_val
+            elif isinstance(lm_val, str):
+                try:
+                    extra_kwargs["language_mix"] = LanguageMix(lm_val)
+                except ValueError:
+                    raise ValueError(
+                        f"Invalid language_mix adjudicator choice "
+                        f"'{lm_val}'"
+                    )
+            else:
+                raise ValueError(
+                    f"Invalid language_mix adjudicator choice "
+                    f"type: {type(lm_val).__name__}"
+                )
+
+            # Type-safe enum handling for college_category
+            cc_val = resolved.get("college_category")
+            if cc_val is None:
+                extra_kwargs["college_category"] = None
+            elif isinstance(cc_val, CollegeCategory):
+                extra_kwargs["college_category"] = cc_val
+            elif isinstance(cc_val, str):
+                try:
+                    extra_kwargs["college_category"] = CollegeCategory(cc_val)
+                except ValueError:
+                    raise ValueError(
+                        f"Invalid college_category adjudicator choice "
+                        f"'{cc_val}'"
+                    )
+            else:
+                raise ValueError(
+                    f"Invalid college_category adjudicator choice "
+                    f"type: {type(cc_val).__name__}"
+                )
+
+            extra_kwargs["deception"] = -1
+
+        if current_guide is not None:
+            extra_kwargs["annotation_guide_version"] = current_guide
+
+        updated = dataclasses.replace(record, **extra_kwargs)
         self._update_record(updated)
         return updated
 

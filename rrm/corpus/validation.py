@@ -569,32 +569,35 @@ def gate_d_eligibility_qc(
             "for Gate-D export"
         )
 
-    # Six label domains
-    _LABEL_DOMAINS_GATE = {
-        "spam": {0, 1},
-        "deception": {-1, 0, 1},
-        "toxicity": {0, 1},
-        "advertising": {0, 1},
-        "off_topic": {0, 1},
-        "pii": {0, 1},
-    }
-    for label, domain in _LABEL_DOMAINS_GATE.items():
+    # Six label domains — all required, None is NOT valid on a FINAL record
+    for label, domain in _LABEL_DOMAINS.items():
         value = getattr(record, label)
-        if value is not None and value not in domain:
+        if value is None:
+            errors.append(
+                f"{label} must be set for Gate-D export, got None"
+            )
+        elif not isinstance(value, int):
+            errors.append(
+                f"{label} must be int, "
+                f"got {type(value).__name__}"
+            )
+        elif value not in domain:
             errors.append(
                 f"{label}={value} is outside valid domain {sorted(domain)}"
             )
 
-    # language_mix
-    if record.language_mix is not None and not isinstance(
-        record.language_mix, LanguageMix
-    ):
+    # language_mix — required, non-None
+    if record.language_mix is None:
         errors.append(
-            f"language_mix must be LanguageMix or None, "
+            "language_mix must be set for Gate-D export, got None"
+        )
+    elif not isinstance(record.language_mix, LanguageMix):
+        errors.append(
+            f"language_mix must be LanguageMix, "
             f"got {type(record.language_mix).__name__}"
         )
 
-    # college_category
+    # college_category — optional, may be None
     if record.college_category is not None and not isinstance(
         record.college_category, CollegeCategory
     ):
@@ -603,18 +606,41 @@ def gate_d_eligibility_qc(
             f"got {type(record.college_category).__name__}"
         )
 
-    # annotation_guide_version
-    if record.annotation_guide_version is not None:
-        if not isinstance(record.annotation_guide_version, str):
-            errors.append(
-                f"annotation_guide_version must be str or None, "
-                f"got {type(record.annotation_guide_version).__name__}"
-            )
-        elif not _SEMVER_PATTERN.match(record.annotation_guide_version):
-            errors.append(
-                f"annotation_guide_version must match semantic version "
-                f"pattern, got '{record.annotation_guide_version}'"
-            )
+    # annotation_guide_version — required, non-empty valid semver
+    if record.annotation_guide_version is None:
+        errors.append(
+            "annotation_guide_version must be set for Gate-D export, "
+            "got None"
+        )
+    elif not isinstance(record.annotation_guide_version, str):
+        errors.append(
+            f"annotation_guide_version must be str, "
+            f"got {type(record.annotation_guide_version).__name__}"
+        )
+    elif not record.annotation_guide_version.strip():
+        errors.append(
+            "annotation_guide_version must be a non-empty string"
+        )
+    elif not _SEMVER_PATTERN.match(record.annotation_guide_version):
+        errors.append(
+            f"annotation_guide_version must match semantic version "
+            f"pattern, got '{record.annotation_guide_version}'"
+        )
+
+    # finalized_at — required, non-empty
+    if record.finalized_at is None:
+        errors.append(
+            "finalized_at must be set for Gate-D export, got None"
+        )
+    elif not isinstance(record.finalized_at, str):
+        errors.append(
+            f"finalized_at must be str, "
+            f"got {type(record.finalized_at).__name__}"
+        )
+    elif not record.finalized_at.strip():
+        errors.append(
+            "finalized_at must be a non-empty string"
+        )
 
     # ------------------------------------------------------------------
     # B. Later-gate ownership
@@ -712,7 +738,7 @@ def gate_d_eligibility_qc(
                 )
 
     # ------------------------------------------------------------------
-    # F. Eight-dimension disagreement
+    # F. Eight-dimension disagreement + agreement consistency
     # ------------------------------------------------------------------
     if sub_a is not None and sub_b is not None:
         _NON_CONTROLLED_DIMS = (
@@ -767,6 +793,40 @@ def gate_d_eligibility_qc(
                         f"adjudicator_id must not be Annotator B's ID "
                         f"for disagreement on '{dim}'"
                     )
+
+        # Agreement consistency: for agreed dimensions, the FINAL record
+        # must contain the agreed value.
+        _AGREEMENT_DIMS = (
+            "spam",
+            "toxicity",
+            "advertising",
+            "off_topic",
+            "pii",
+            "language_mix",
+            "college_category",
+        )
+        for dim in _AGREEMENT_DIMS:
+            if dim in controlled_labels:
+                continue  # controlled — skip
+
+            if dim_values_a[dim] == dim_values_b[dim]:
+                agreed = dim_values_a[dim]
+                if dim in ("language_mix", "college_category"):
+                    rec_val = getattr(record, dim)
+                    rec_str = rec_val.value if rec_val else None
+                    if rec_str != agreed:
+                        errors.append(
+                            f"Dimension '{dim}': A and B agree on "
+                            f"'{agreed}' but record has "
+                            f"'{rec_str}'"
+                        )
+                else:
+                    rec_val = getattr(record, dim)
+                    if rec_val != agreed:
+                        errors.append(
+                            f"Dimension '{dim}': A and B agree on "
+                            f"{agreed} but record has {rec_val}"
+                        )
 
     # ------------------------------------------------------------------
     # G. Controlled truth

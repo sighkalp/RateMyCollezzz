@@ -265,11 +265,13 @@ class TestExportCorpus:
             annotator_id="ann-a",
             annotation_guide_version="1.0",
             spam=0,
-            deception=0,
+            deception=-1,
             toxicity=0,
             advertising=0,
             off_topic=0,
             pii=0,
+            language_mix=LanguageMix.ENGLISH,
+            college_category=None,
             submitted_at="2025-01-01T00:00:00Z",
         )
         sub_b = AnnotationSubmission(
@@ -277,11 +279,13 @@ class TestExportCorpus:
             annotator_id="ann-b",
             annotation_guide_version="1.0",
             spam=0,
-            deception=0,
+            deception=-1,
             toxicity=0,
             advertising=0,
             off_topic=0,
             pii=0,
+            language_mix=LanguageMix.ENGLISH,
+            college_category=None,
             submitted_at="2025-01-01T00:00:00Z",
         )
         submissions = AnnotationSubmissionStore()
@@ -302,6 +306,8 @@ class TestExportCorpus:
             review_id=review_id,
             source_type=SourceType.HUMAN_WRITTEN_RMC,
             annotation_status=AnnotationStatus.FINAL,
+            annotation_guide_version="1.0",
+            finalized_at="2025-01-02T00:00:00Z",
             annotator_A_id="ann-a",
             annotator_B_id="ann-b",
             review_text="Test review text for export",
@@ -314,7 +320,7 @@ class TestExportCorpus:
             off_topic=0,
             pii=0,
             language_mix=LanguageMix.ENGLISH,
-            college_category=CollegeCategory.ACADEMICS,
+            college_category=None,
         )
 
     def test_export_returns_list_of_dicts(self):
@@ -416,7 +422,13 @@ class TestExportToJsonl:
             review_text="text",
             created_at="2025-01-01T00:00:00Z",
             consent_status="CONSENTED",
+            spam=0,
             deception=-1,
+            toxicity=0,
+            advertising=0,
+            off_topic=0,
+            pii=0,
+            language_mix=LanguageMix.ENGLISH,
         )
         sub_a = AnnotationSubmission(
             review_id="r-1",
@@ -428,6 +440,7 @@ class TestExportToJsonl:
             advertising=0,
             off_topic=0,
             pii=0,
+            language_mix=LanguageMix.ENGLISH,
             submitted_at="2025-01-01T00:00:00Z",
         )
         sub_b = AnnotationSubmission(
@@ -440,6 +453,7 @@ class TestExportToJsonl:
             advertising=0,
             off_topic=0,
             pii=0,
+            language_mix=LanguageMix.ENGLISH,
             submitted_at="2025-01-01T00:00:00Z",
         )
         submissions = AnnotationSubmissionStore()

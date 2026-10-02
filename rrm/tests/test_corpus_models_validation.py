@@ -68,8 +68,14 @@ def _make_sub(
     review_id: str = "r-1",
     annotator_id: str = "ann-a",
     annotation_guide_version: str = "1.0",
-    deception: int = 0,
+    deception: int = -1,
     spam: int = 0,
+    toxicity: int = 0,
+    advertising: int = 0,
+    off_topic: int = 0,
+    pii: int = 0,
+    language_mix: LanguageMix = LanguageMix.ENGLISH,
+    college_category: CollegeCategory = CollegeCategory.ACADEMICS,
 ) -> AnnotationSubmission:
     """Build a minimal valid AnnotationSubmission for tests."""
     return AnnotationSubmission(
@@ -78,10 +84,12 @@ def _make_sub(
         annotation_guide_version=annotation_guide_version,
         spam=spam,
         deception=deception,
-        toxicity=0,
-        advertising=0,
-        off_topic=0,
-        pii=0,
+        toxicity=toxicity,
+        advertising=advertising,
+        off_topic=off_topic,
+        pii=pii,
+        language_mix=language_mix,
+        college_category=college_category,
         submitted_at="2025-01-01T00:00:00Z",
     )
 
@@ -950,15 +958,24 @@ class TestGateDEligibilityQC:
             review_id="r-1",
             source_type=SourceType.HUMAN_WRITTEN_RMC,
             annotation_status=AnnotationStatus.FINAL,
+            annotation_guide_version="1.0",
+            finalized_at="2025-01-02T00:00:00Z",
             annotator_A_id="ann-a",
             annotator_B_id="ann-b",
             review_text="some review text",
             created_at="2025-01-01T00:00:00Z",
             consent_status="CONSENTED",
             deception=-1,
+            spam=0,
+            toxicity=0,
+            advertising=0,
+            off_topic=0,
+            pii=0,
+            language_mix=LanguageMix.ENGLISH,
+            college_category=None,
         )
-        sub_a = _make_sub(review_id="r-1", annotator_id="ann-a")
-        sub_b = _make_sub(review_id="r-1", annotator_id="ann-b")
+        sub_a = _make_sub(review_id="r-1", annotator_id="ann-a", college_category=None)
+        sub_b = _make_sub(review_id="r-1", annotator_id="ann-b", college_category=None)
         ctx = _make_operational_context("r-1", sub_a=sub_a, sub_b=sub_b)
         is_eligible, errors = gate_d_eligibility_qc(record, ctx)
         assert is_eligible is True
@@ -1059,10 +1076,16 @@ class TestGateDEligibilityQC:
             controlled_targets={"spam": 1},
             spam=1,
             deception=-1,
+            toxicity=0,
+            advertising=0,
+            off_topic=0,
+            pii=0,
+            language_mix=LanguageMix.ENGLISH,
+            college_category=CollegeCategory.ACADEMICS,
             deception_truth=None,
         )
-        sub_a = _make_sub(review_id="r-1", annotator_id="ann-a", spam=1)
-        sub_b = _make_sub(review_id="r-1", annotator_id="ann-b", spam=1)
+        sub_a = _make_sub(review_id="r-1", annotator_id="ann-a", spam=1, deception=-1)
+        sub_b = _make_sub(review_id="r-1", annotator_id="ann-b", spam=1, deception=-1)
         truth = ControlledProtocolTruth(
             review_id="r-1",
             control_protocol_id="protocol-1",
@@ -1077,3 +1100,162 @@ class TestGateDEligibilityQC:
         is_eligible, errors = gate_d_eligibility_qc(record, ctx)
         assert is_eligible is True
         assert errors == []
+
+    # ---- Defect B: agreement consistency tests ----
+
+    def test_agreed_label_materialized_in_record(self):
+        """Defect B: when A and B agree, the FINAL record carries that value."""
+        record = CanonicalRecord(
+            review_id="r-1",
+            source_type=SourceType.HUMAN_WRITTEN_RMC,
+            annotation_status=AnnotationStatus.FINAL,
+            annotator_A_id="ann-a",
+            annotator_B_id="ann-b",
+            review_text="text",
+            created_at="2025-01-01T00:00:00Z",
+            consent_status="CONSENTED",
+            deception=-1,
+            spam=1,
+            toxicity=1,
+            advertising=0,
+            off_topic=0,
+            pii=0,
+            language_mix=LanguageMix.ENGLISH,
+            annotation_guide_version="1.0",
+            finalized_at="2025-01-02T00:00:00Z",
+        )
+        sub_a = _make_sub(review_id="r-1", annotator_id="ann-a", spam=1, toxicity=1, college_category=None)
+        sub_b = _make_sub(review_id="r-1", annotator_id="ann-b", spam=1, toxicity=1, college_category=None)
+        ctx = _make_operational_context("r-1", sub_a=sub_a, sub_b=sub_b)
+        is_eligible, errors = gate_d_eligibility_qc(record, ctx)
+        assert is_eligible is True
+        assert errors == []
+
+    def test_mismatched_label_fails_validation(self):
+        """Defect B: when record disagrees with both annotators, Gate-D fails."""
+        record = CanonicalRecord(
+            review_id="r-1",
+            source_type=SourceType.HUMAN_WRITTEN_RMC,
+            annotation_status=AnnotationStatus.FINAL,
+            annotator_A_id="ann-a",
+            annotator_B_id="ann-b",
+            review_text="text",
+            created_at="2025-01-01T00:00:00Z",
+            consent_status="CONSENTED",
+            deception=-1,
+            spam=0,   # record says 0 but both annotators said 1
+            toxicity=0,
+            advertising=0,
+            off_topic=0,
+            pii=0,
+            language_mix=LanguageMix.ENGLISH,
+            annotation_guide_version="1.0",
+            finalized_at="2025-01-02T00:00:00Z",
+        )
+        sub_a = _make_sub(review_id="r-1", annotator_id="ann-a", spam=1)
+        sub_b = _make_sub(review_id="r-1", annotator_id="ann-b", spam=1)
+        ctx = _make_operational_context("r-1", sub_a=sub_a, sub_b=sub_b)
+        is_eligible, errors = gate_d_eligibility_qc(record, ctx)
+        assert is_eligible is False
+        assert any("spam" in e and "agree" in e for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# C1 QC coverage — Gate-D rejects when required fields absent (section 13)
+# ---------------------------------------------------------------------------
+
+
+class TestGateDQCAbsentFields:
+    """Prove Gate-D rejects a FINAL candidate when required fields are absent."""
+
+    def _make_base_record(self, **overrides):
+        """Build a minimally valid FINAL record with all required fields."""
+        kwargs = dict(
+            review_id="r-1",
+            source_type=SourceType.HUMAN_WRITTEN_RMC,
+            annotation_status=AnnotationStatus.FINAL,
+            annotator_A_id="ann-a",
+            annotator_B_id="ann-b",
+            review_text="text",
+            created_at="2025-01-01T00:00:00Z",
+            consent_status="CONSENTED",
+            deception=-1,
+            spam=0,
+            toxicity=0,
+            advertising=0,
+            off_topic=0,
+            pii=0,
+            language_mix=LanguageMix.ENGLISH,
+            annotation_guide_version="1.0",
+            finalized_at="2025-01-02T00:00:00Z",
+        )
+        kwargs.update(overrides)
+        return CanonicalRecord(**kwargs)
+
+    def _make_context(self):
+        sub_a = _make_sub(review_id="r-1", annotator_id="ann-a")
+        sub_b = _make_sub(review_id="r-1", annotator_id="ann-b")
+        return _make_operational_context("r-1", sub_a=sub_a, sub_b=sub_b)
+
+    @pytest.mark.parametrize("field", [
+        "spam",
+        "deception",
+        "toxicity",
+        "advertising",
+        "off_topic",
+        "pii",
+    ])
+    def test_absent_label_field_rejects_gate_d(self, field):
+        """Each required canonical label must be present for Gate-D."""
+        kwargs = {
+            "spam": 0,
+            "deception": -1,
+            "toxicity": 0,
+            "advertising": 0,
+            "off_topic": 0,
+            "pii": 0,
+        }
+        kwargs[field] = None  # type: ignore
+        record = self._make_base_record(**kwargs)
+        ctx = self._make_context()
+        is_eligible, errors = gate_d_eligibility_qc(record, ctx)
+        assert is_eligible is False
+
+    def test_absent_language_mix_rejects_gate_d(self):
+        """language_mix is required for Gate-D eligibility."""
+        record = self._make_base_record(language_mix=None)
+        ctx = self._make_context()
+        is_eligible, errors = gate_d_eligibility_qc(record, ctx)
+        assert is_eligible is False
+
+    def test_absent_annotation_guide_version_rejects_gate_d(self):
+        """annotation_guide_version is required for Gate-D eligibility."""
+        record = self._make_base_record(annotation_guide_version=None)
+        ctx = self._make_context()
+        is_eligible, errors = gate_d_eligibility_qc(record, ctx)
+        assert is_eligible is False
+
+    def test_absent_finalized_at_rejects_gate_d(self):
+        """finalized_at is required for Gate-D eligibility."""
+        record = self._make_base_record(finalized_at=None)
+        ctx = self._make_context()
+        is_eligible, errors = gate_d_eligibility_qc(record, ctx)
+        assert is_eligible is False
+
+    def test_college_category_none_can_be_gate_d_eligible(self):
+        """college_category=None is still Gate-D eligible."""
+        record = self._make_base_record(college_category=None)
+        # A and B must agree on college_category=None to satisfy
+        # agreement consistency — record must match.
+        sub_a = _make_sub(
+            review_id="r-1", annotator_id="ann-a",
+            college_category=None,
+        )
+        sub_b = _make_sub(
+            review_id="r-1", annotator_id="ann-b",
+            college_category=None,
+        )
+        ctx = _make_operational_context("r-1", sub_a=sub_a, sub_b=sub_b)
+        is_eligible, errors = gate_d_eligibility_qc(record, ctx)
+        # college_category=None alone should not block Gate-D
+        assert is_eligible is True
