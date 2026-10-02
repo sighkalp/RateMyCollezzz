@@ -100,6 +100,11 @@ from rrm.corpus.collection_store import (
     HumanWrittenCollectionStore,
 )
 
+from rrm.corpus.annotation_workspace import (
+    AnnotationTask,
+    HumanWrittenAnnotationWorkspace,
+)
+
 # ---------------------------------------------------------------------------
 # Export
 # ---------------------------------------------------------------------------
