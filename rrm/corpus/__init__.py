@@ -85,6 +85,14 @@ from rrm.corpus.pii_adapter import (
 from rrm.corpus.workflow import CorpusWorkflow
 
 # ---------------------------------------------------------------------------
+# Intake adapter
+# ---------------------------------------------------------------------------
+from rrm.corpus.intake import (
+    HumanWrittenIntakeResult,
+    collect_human_written_review,
+)
+
+# ---------------------------------------------------------------------------
 # Export
 # ---------------------------------------------------------------------------
 from rrm.corpus.export import (
