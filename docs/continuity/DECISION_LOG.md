@@ -864,3 +864,70 @@ Owning gates:
 - Later-gate: D for dataset_version; E for split_membership and split_group_id
 
 Status: LOCKED.
+
+---
+
+## D-042 — Gate C infrastructure validated, phase remains active
+
+Decision:
+
+Gate C — Production Corpus Collection + Annotation infrastructure is
+implementation-ready and regression-validated, but Gate C remains ACTIVE
+until approved-source corpus collection and annotation are actually
+completed.
+
+Implementation commits:
+
+```text
+0923401
+feat(rrm): add production corpus schema and provenance
+
+4365b34
+feat(rrm): add production annotation workflow
+
+1a1dbe8
+feat(rrm): add corpus qc and gate d export
+```
+
+Full repository regression:
+
+```text
+1417 passed
+2 warnings
+0 failed
+80.73s
+```
+
+Warnings were pre-existing RoBERTa scheduler-order warnings, not Gate C
+failures.
+
+Runtime:
+
+```text
+RRM runtime foundation: PASS
+```
+
+Current state:
+
+- production corpus has NOT been collected
+- production corpus has NOT been annotated
+- production dataset is NOT frozen
+- Gate D remains INACTIVE
+
+Next action:
+
+Begin actual Gate C collection and annotation using ONLY approved
+Gate C source classes and the frozen Gate B v1.0 contract.
+
+Do not claim:
+
+- production corpus AVAILABLE
+- production corpus COLLECTED
+- production annotation COMPLETE
+- dataset FROZEN
+- Gate C CLOSED
+- Gate D ACTIVE
+
+Do not invent any scientific production performance measurements.
+
+Status: LOCKED.

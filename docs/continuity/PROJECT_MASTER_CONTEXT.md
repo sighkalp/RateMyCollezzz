@@ -1112,9 +1112,56 @@ Durable Gate B policies:
 
 Gate C — Production Corpus Collection + Annotation
 
+Gate C infrastructure is implemented and validated.
+
+Actual production corpus collection and annotation have NOT been completed.
+
+Production dataset is NOT frozen.
+
+Gate D is INACTIVE.
+
+Gate C implementation commits:
+
+```text
+0923401
+feat(rrm): add production corpus schema and provenance
+
+4365b34
+feat(rrm): add production annotation workflow
+
+1a1dbe8
+feat(rrm): add corpus qc and gate d export
+```
+
+Full regression:
+
+```text
+1417 passed
+2 warnings
+0 failed
+80.73s
+```
+
+Warnings from pre-existing RoBERTa scheduler-order warnings.
+
+Runtime:
+
+```text
+RRM runtime foundation: PASS
+```
+
+Next action:
+
+Begin actual Gate C collection and annotation using ONLY approved
+Gate C source classes and the frozen Gate B v1.0 annotation/metadata
+contract.
+
+Do NOT proceed to Gate D until production corpus is collected,
+annotated, and frozen.
+
 ---
 
-# 14. KNOWN GIT HISTORY
+# 15. KNOWN GIT HISTORY
 
 Known exact hashes:
 
@@ -1142,6 +1189,9 @@ a8ffc00  feat(rrm): add unified deterministic prechecks
 81cf7ce  feat(rrm): add multitask heads and training infrastructure
 efb9f4f  feat(rrm): add scientific evaluation infrastructure
 a24b88b  feat(rrm): add runtime packaging and layer contract
+0923401  feat(rrm): add production corpus schema and provenance
+4365b34  feat(rrm): add production annotation workflow
+1a1dbe8  feat(rrm): add corpus qc and gate d export
 ```
 
 Do not fabricate unknown hashes.

@@ -1,6 +1,6 @@
 # RateMyCollezzz — Current State
 
-**Last continuity update:** 2026-09-30
+**Last continuity update:** 2026-10-02
 
 This file answers one question:
 
@@ -29,6 +29,7 @@ RRM 3.10  LOCKED + COMPLETE
 
 RRM 3.11  LOCKED + COMPLETE
           commit: a24b88b
+```
 
 RRM 3.11 packages the stable Layer-3 public runtime boundary.
 
@@ -252,6 +253,123 @@ RRM 3.11 does NOT:
   - produce scientific performance claims
   - depend on Trust / Platform / Experience / Ops
 ```
+
+---
+
+# 3b. ACTIVE PHASE — GATE C
+
+## Phase
+
+Gate C — Production Corpus Collection + Annotation
+
+## Status
+
+ACTIVE
+
+## Description
+
+Gate C infrastructure is implemented and validated.
+
+Actual production corpus collection and annotation have NOT yet been completed.
+
+Production dataset is NOT frozen.
+
+Gate D is INACTIVE.
+
+## Latest commit
+
+```text
+1a1dbe8
+feat(rrm): add corpus qc and gate d export
+```
+
+## Implementation commits
+
+```text
+0923401
+feat(rrm): add production corpus schema and provenance
+
+4365b34
+feat(rrm): add production annotation workflow
+
+1a1dbe8
+feat(rrm): add corpus qc and gate d export
+```
+
+## Validation
+
+Full repository regression:
+
+```text
+1417 passed
+2 warnings
+0 failed
+80.73s
+```
+
+Warnings were pre-existing RoBERTa scheduler-order warnings from:
+
+```text
+rrm/tests/test_baseline_roberta.py
+```
+
+Do NOT describe warnings as Gate C failures.
+
+Runtime check:
+
+```text
+RRM runtime foundation: PASS
+```
+
+Runtime details:
+
+```text
+Python 3.11.15
+PyTorch 2.14.0+cu130
+CUDA available
+NVIDIA GeForce RTX 2050
+VRAM 4.00 GB
+```
+
+These are development-environment details, NOT production-performance measurements.
+
+## Production files
+
+```text
+rrm/corpus/__init__.py
+rrm/corpus/models.py
+rrm/corpus/validation.py
+rrm/corpus/pii_adapter.py
+rrm/corpus/annotation.py
+rrm/corpus/workflow.py
+rrm/corpus/export.py
+```
+
+## Test files
+
+```text
+rrm/tests/test_corpus_models_validation.py
+rrm/tests/test_corpus_sources.py
+rrm/tests/test_corpus_annotation.py
+rrm/tests/test_corpus_pii_export.py
+rrm/tests/test_corpus_workflow.py
+```
+
+## Key facts
+
+- CanonicalRecord: exactly 38 fields
+- PORTABLE_CANDIDATE_FIELDS: exactly 32 fields
+- Gate C reason codes: exactly 10
+- AnnotationStatus: UNANNOTATED, ANNOTATING, ADJUDICATION_REQUIRED, FINAL, EXCLUDED
+- Approved source types: HUMAN_WRITTEN_RMC, CONTROLLED_RMC, SYNTHETIC_DERIVED_RMC
+- Gate A HOLD external sources remain excluded
+- No import_from_jsonl reverse portable-deserialization API
+
+## Next action
+
+Begin actual Gate C production corpus collection and annotation using ONLY the approved Gate C source classes and the frozen Gate B v1.0 annotation/metadata contract.
+
+Do NOT proceed to Gate D until production corpus is collected, annotated, and frozen.
 
 ---
 

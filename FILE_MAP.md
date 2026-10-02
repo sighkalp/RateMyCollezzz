@@ -200,7 +200,7 @@ Do not pre-create speculative Layer-2 files while RRM work is active.
 
 **Current state:** ACTIVE
 
-**Current active component:** RRM 3.11 - Packaging + Layer Contract
+**Current active component:** Gate C — Production Corpus Collection + Annotation
 
 ### `rrm/__init__.py`
 
@@ -919,3 +919,147 @@ Whenever a meaningful new file is approved, document it using:
 ```
 
 This format keeps ownership obvious.
+
+### `rrm/corpus/__init__.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Defines the rrm.corpus package boundary and re-exports the selected public corpus API.
+
+**Used by:** Corpus module consumers, importers of the corpus package.
+
+**Must NOT:** Modify rrm/__init__.py.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/corpus/models.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Canonical enums, frozen CanonicalRecord (38 fields), and internal operational dataclasses for the RMC corpus. Single owner of canonical type definitions.
+
+**Used by:** All other rrm/corpus modules; validation; export; workflow.
+
+**Must NOT:** Introduce new reason codes, change label domains, or make moderation decisions.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/corpus/validation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Deterministic validation for CanonicalRecord, annotation submissions, controlled truth, synthetic provenance, and Gate-D eligibility QC.
+
+**Used by:** Corpus workflow, export pipeline, annotation pipeline.
+
+**Must NOT:** Make moderation decisions or trust decisions. Produces evidence about record quality only.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/corpus/pii_adapter.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Bridges rrm.pii_detection with the corpus workflow. Provides safe surrogate transformation, PII redaction, and PIIEvidenceSummary construction. Uses rrm.pii_detection exclusively — no second detector.
+
+**Used by:** Corpus workflow, record creation, export.
+
+**Must NOT:** Implement a second PII detector, store original private values, or make trust decisions.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/corpus/annotation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Operational annotation stores for annotation submissions, controlled protocol truths, record dispositions, and reannotation requirements. Frozen dataclasses define structured record types. Provides eight-dimension disagreement detection and adjudicator decision application.
+
+**Used by:** Corpus workflow, annotation pipeline, adjudication.
+
+**Must NOT:** Make moderation decisions or trust decisions. Records annotation evidence only.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/corpus/workflow.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Orchestrates the annotation workflow lifecycle. Manages the exact Gate C annotation statuses: UNANNOTATED, ANNOTATING, ADJUDICATION_REQUIRED, FINAL, EXCLUDED. Handles record creation, submission, finalization, and exclusion.
+
+**Used by:** Corpus annotation pipeline, record lifecycle management.
+
+**Must NOT:** Make moderation decisions or trust decisions. Orchestrates data flow and state transitions only.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/corpus/export.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Gate-D QC-gated portable candidate export. Projects CanonicalRecord to the exact 32-field PORTABLE_CANDIDATE_FIELDS projection. Supports JSON and JSONL output formats.
+
+**Used by:** Gate-D export pipeline, dataset release.
+
+**Must NOT:** Export source_text_raw, contributor_pseudonym, annotator_A_id, annotator_B_id, adjudicator_id, or annotation_notes in any portable export mode. Make trust decisions, or include fields outside PORTABLE_CANDIDATE_FIELDS without explicit governance approval.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/tests/test_corpus_models_validation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for corpus models and validation functions.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/tests/test_corpus_sources.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for source-type enums, language-mix enum values, and source-specific validation rules.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/tests/test_corpus_annotation.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for annotation stores, eight-dimension disagreement detection, and adjudicator decision application.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/tests/test_corpus_pii_export.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the PII adapter, safe surrogate transformation, PII redaction, PIIEvidenceSummary construction, and export functionality.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
+
+### `rrm/tests/test_corpus_workflow.py`
+
+**Layer:** Layer 3 — Review Intelligence / RRM
+
+**Purpose:** Pytest test suite for the CorpusWorkflow state machine, record creation, submission, finalization, exclusion, and Gate-D eligibility QC.
+
+**Used by:** CI, local validation, development correctness checks.
+
+**Must NOT:** Contain moderation threshold logic or Trust-layer tests.
+
+**Active component:** Gate C — Production Corpus Collection + Annotation
