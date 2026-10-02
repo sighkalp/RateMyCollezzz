@@ -93,6 +93,14 @@ from rrm.corpus.intake import (
 )
 
 # ---------------------------------------------------------------------------
+# Collection store (Gate-C restricted local persistence)
+# ---------------------------------------------------------------------------
+from rrm.corpus.collection_store import (
+    CollectionSession,
+    HumanWrittenCollectionStore,
+)
+
+# ---------------------------------------------------------------------------
 # Export
 # ---------------------------------------------------------------------------
 from rrm.corpus.export import (

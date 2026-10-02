@@ -46,6 +46,11 @@ yarn-error.log*
 *.db
 
 # -------------------------
+# Research / generated data
+# -------------------------
+local_research_data/
+
+# -------------------------
 # ML / RRM generated files
 # -------------------------
 checkpoints/
